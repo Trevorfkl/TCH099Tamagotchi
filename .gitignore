@@ -1,0 +1,18 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+
+# Android
+**/build/
+**/.gradle/
+**/local.properties
+**/*.apk
+
+# Web/API
+**/node_modules/
+**/.env
+**/dist/
+
+# Database
+**/*.sqlite
