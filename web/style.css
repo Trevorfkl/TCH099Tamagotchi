@@ -1,0 +1,143 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap');
+
+
+:root {
+    --bg-color: #EAF4E5;       
+    --card-bg: #FFFFFF;        
+    --text-main: #2C4C3B;      
+    --input-bg: #F4F9F1;       
+    --input-border: #C8E2C6;   
+    --primary: #6B9F71;        
+    --primary-hover: #55825A;
+    --secondary: #D4E6D1;      
+    --secondary-hover: #C1D8BD;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Fredoka', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+
+.app-container {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 380px;
+    min-height: 700px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(44, 76, 59, 0.15);
+    padding: 40px 30px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+.logo-placeholder {
+    width: 130px;
+    height: 130px;
+    background-color: var(--secondary);
+    border-radius: 35px;
+    margin: 0 auto 50px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
+}
+
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--input-border);
+    border-radius: 12px;
+    background-color: var(--input-bg);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    color: var(--text-main);
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+input:focus {
+    border-color: var(--primary);
+}
+
+/* Boutons et Liens */
+.btn-container {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 15px;
+    border: none;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-decoration: none; /* Pour les liens <a> stylisés en boutons */
+    box-sizing: border-box;
+    display: block;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(107, 159, 113, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+}
