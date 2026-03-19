@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plante Tamagotchi - Mon Jardin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container dashboard-layout">
+        
+        <h1 style="font-size: 24px; margin-top: 0;" id="welcomeText">Bonjour !</h1>
+        <p style="margin-top: -10px; margin-bottom: 30px; color: #6B9F71;">Prends soin de ta plante 🌿</p>
+
+        <div class="card-section">
+            <div class="garden-status">
+                <div class="garden-icon" id="gardenIcon">🌱</div>
+                <div>
+                    <h2 style="margin: 0; font-size: 18px;" id="gardenText">Graine</h2>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.8;" id="progressText">0% de croissance</p>
+                </div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <h2 style="margin: 0 0 15px 0; font-size: 18px;">Mes Tâches</h2>
+            <div id="taskList">
+                </div>
+        </div>
+
+        <div class="btn-container" style="margin-top: 10px;">
+            <a href="ajout.html" class="btn btn-primary">Ajouter une tâche</a>
+            <a href="index.html" class="btn btn-secondary">Déconnexion</a>
+        </div>
+
+    </div>
+
+    <script>
+        const storedName = localStorage.getItem('userName');
+        if (storedName) {
+            const capitalized = storedName.charAt(0).toUpperCase() + storedName.slice(1);
+            document.getElementById('welcomeText').textContent = 'Bonjour, ' + capitalized + ' !';
+        }
+
+        let tasks = JSON.parse(localStorage.getItem('tasks'));
+        if (!tasks) {
+            tasks = [
+                { id: '1', name: 'Arroser la plante', completed: true },
+                { id: '2', name: 'Faire mes devoirs', completed: false }
+            ];
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            const listDiv = document.getElementById('taskList');
+            listDiv.innerHTML = '';
+            let completedCount = 0;
+
+            tasks.forEach(task => {
+                if (task.completed) completedCount++;
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-item';
+                taskDiv.onclick = () => toggleTask(task.id);
+
+                const checkSymbol = task.completed ? '✓' : '';
+                const checkClass = task.completed ? 'checkbox checked' : 'checkbox';
+                const textClass = task.completed ? 'task-text completed' : 'task-text';
+
+                taskDiv.innerHTML = `
+                    <div class="${checkClass}">${checkSymbol}</div>
+                    <span class="${textClass}">${task.name}</span>
+                `;
+                listDiv.appendChild(taskDiv);
+            });
+
+            updateGarden(completedCount, tasks.length);
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) return { ...task, completed: !task.completed };
+                return task;
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function updateGarden(completed, total) {
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '% de croissance';
+
+            const iconEl = document.getElementById('gardenIcon');
+            const textEl = document.getElementById('gardenText');
+
+            if (progress === 100) {
+                iconEl.textContent = '🌸';
+                textEl.textContent = 'Plante fleurie !';
+            } else if (progress >= 50) {
+                iconEl.textContent = '🪴';
+                textEl.textContent = 'Plante en pot';
+            } else {
+                iconEl.textContent = '🌱';
+                textEl.textContent = 'Jeune pousse';
+            }
+        }
+
+        renderTasks();
+    </script>
+</body>
+</html>

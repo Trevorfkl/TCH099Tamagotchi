@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plante Tamagotchi - Ajouter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container dashboard-layout">
+        
+        <h1 style="font-size: 24px; margin-top: 0;">Nouvelle tâche</h1>
+        
+        <div class="card-section" style="margin-top: 20px;">
+            <form id="addTaskForm">
+                <div class="form-group">
+                    <label>Que dois-tu faire ?</label>
+                    <input type="text" id="taskInput" placeholder="Ex: Réviser l'examen..." required autofocus>
+                </div>
+
+                <div class="btn-container" style="margin-top: 40px;">
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                    <a href="dashboard.html" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const taskName = document.getElementById('taskInput').value.trim();
+
+            if (taskName) {
+                let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                tasks.push({
+                    id: Date.now().toString(),
+                    name: taskName,
+                    completed: false
+                });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>
