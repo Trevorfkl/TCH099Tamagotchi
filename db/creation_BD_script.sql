@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Users` (
   `lastName` VARCHAR(45) NOT NULL,
   `email` VARCHAR(255) NOT NULL UNIQUE,
   `hashedPassword` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(20) NOT NULL CHECK (role IN ('ÉTUDIANT', 'PROFESSEUR', 'ADMIN')),
+  `phone` VARCHAR(20) NOT NULL UNIQUE,
   PRIMARY KEY (`userId`))
 ENGINE = InnoDB;
 
