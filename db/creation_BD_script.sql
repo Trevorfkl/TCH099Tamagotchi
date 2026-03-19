@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Users` (
   `userId` INT NOT NULL AUTO_INCREMENT,
   `firstName` VARCHAR(45) NOT NULL,
   `lastName` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
-  `hashedPassword` VARCHAR(60) NOT NULL,
-  `role` VARCHAR(20) NOT NULL COMMENT 'CHECK IN (\'ÉTUDIANT\', \'PROFESSEUR\', \'ADMIN\')',
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `hashedPassword` VARCHAR(255) NOT NULL,
+  `role` VARCHAR(20) NOT NULL CHECK (role IN ('ÉTUDIANT', 'PROFESSEUR', 'ADMIN')),
   PRIMARY KEY (`userId`))
 ENGINE = InnoDB;
 
@@ -37,13 +37,13 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `mydb`.`Semesters` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Semesters` (
-  `semesterId` INT NOT NULL,
+  `semesterId` INT NOT NULL AUTO_INCREMENT,
   `userId` INT NOT NULL,
-  `semesterSeason` VARCHAR(45) NOT NULL COMMENT 'CHECK IN (\'AUTOMNE\', \'HIVER\', \'ÉTÉ\')',
+  `semesterSeason` VARCHAR(10) NOT NULL CHECK (semesterSeason IN ('AUTOMNE', 'HIVER', 'ÉTÉ')),
   `semesterYear` YEAR NOT NULL,
-  `semesterStartDate` VARCHAR(45) NULL,
-  `semesterEndDate` VARCHAR(45) NULL,
-  `createdByTeacher` TINYINT NOT NULL,
+  `semesterStartDate` DATE NOT NULL,
+  `semesterEndDate` DATE NOT NULL,
+  `createdByTeacher` TINYINT NULL,
   PRIMARY KEY (`semesterId`),
   CONSTRAINT `fk_userSemesters`
     FOREIGN KEY (`userId`)
@@ -64,9 +64,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Classes` (
   `className` VARCHAR(45) NOT NULL,
   `classCode` VARCHAR(10) NULL DEFAULT "NOT SET",
   `classGroup` INT NULL,
-  `classSeminarLocation` VARCHAR(10) NULL DEFAULT 'NOT SET',
-  `classLabLocation` VARCHAR(10) NULL DEFAULT 'NOT SET',
-  `classStatus` VARCHAR(45) NULL COMMENT 'CHECK IN (\'EN COURS\', \'COMPLETÉ\', \'ANNULÉ\')',
+  `classSeminarLocation` VARCHAR(10) NOT NULL DEFAULT 'NOT SET',
+  `classLabLocation` VARCHAR(10) NOT NULL DEFAULT 'NOT SET',
+  `classStatus` VARCHAR(10) NULL CHECK (classStatus IN ('EN COURS', 'COMPLETÉ', 'ANNULÉ')),
   PRIMARY KEY (`classId`),
   CONSTRAINT `fk_semesterClasses`
     FOREIGN KEY (`semesterId`)
@@ -82,9 +82,9 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `mydb`.`Plants` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Plants` (
-  `plantId` INT NOT NULL,
+  `plantId` INT NOT NULL AUTO_INCREMENT,
   `createdByUserId` INT NULL,
-  `plantName` VARCHAR(45) NOT NULL,
+  `plantName` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`plantId`),
   CONSTRAINT `fk_plantsCreatedByUser`
     FOREIGN KEY (`createdByUserId`)
@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Projects` (
   `classId` INT NULL,
   `projectName` VARCHAR(45) NOT NULL,
   `creationDate` DATE NOT NULL,
-  `projectStatus` VARCHAR(45) NOT NULL COMMENT 'CHECK IN (\'EN COURS\', \'COMPLETÉ\', \'ANNULÉ\')',
-  `dueDateTime` DATETIME NULL,
+  `projectStatus` VARCHAR(45) NOT NULL CHECK (projectStatus IN ('EN COURS', 'COMPLETÉ', 'ANNULÉ')),
+  `dueDateTime` DATETIME NOT NULL,
   `currentMilestoneZ` INT NULL,
   PRIMARY KEY (`projectId`),
   CONSTRAINT `fk_classProjects`
@@ -127,7 +127,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `mydb`.`PlantStages` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`PlantStages` (
-  `plantStageId` INT NOT NULL,
+  `plantStageId` INT NOT NULL AUTO_INCREMENT,
   `plantId` INT NOT NULL,
   `plantStageZ` INT NOT NULL,
   `image` VARCHAR(45) NOT NULL,
@@ -146,18 +146,12 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `mydb`.`Milestones` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Milestones` (
-  `milestoneId` INT NOT NULL,
-  `plantStageId` INT NOT NULL,
+  `milestoneId` INT NOT NULL AUTO_INCREMENT,
   `projectId` INT NOT NULL,
   `milestoneName` VARCHAR(45) NOT NULL,
   `description` VARCHAR(200) NULL,
-  `MilestoneZ` INT NULL,
+  `MilestoneZ` INT NOT NULL,
   PRIMARY KEY (`milestoneId`),
-  CONSTRAINT `fk_plantStageMilestones`
-    FOREIGN KEY (`plantStageId`)
-    REFERENCES `mydb`.`PlantStages` (`plantStageId`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_projectMilestones`
     FOREIGN KEY (`projectId`)
     REFERENCES `mydb`.`Projects` (`projectId`)
