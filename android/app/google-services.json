@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1076098862918",
+    "project_id": "growchi-24e6d",
+    "storage_bucket": "growchi-24e6d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076098862918:android:d1f0bc0af9be5c10801f47",
+        "android_client_info": {
+          "package_name": "ca.ets.tch57.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8Ev09Dp_JSKpms1E2J5GjIDu6fdZvhH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
