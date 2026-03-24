@@ -61,20 +61,23 @@ class RestControllerProject
         $data = file_get_contents('php://input');
         $json = json_decode($data, true);
         
-        $json['price'] = (float)$json['price'];
-        $json['quantity'] = (int)$json['quantity'];
-
-        if ($this->validateProduct($json)) {
-            $newProduct = new Product(
-                $json['id'] ?? null, 
+        if ($this->validateProject($json)) {
+            $newProject = new Project(
+                $json['id'] ?? null,
+                $json['courseId'] ?? null,
                 $json['name'],
-                $json['price'],
-                $json['image'],
-                $json['category'],
-                $json['description'],
-                $json['quantity']);
+                $json['dueDate'],
+                $json['status'],
+                $json['plantId'],
+                $json['currentMilestoneIndex'],
+                null, // plant object will be set in the repository
+                [] // milestones will be set in the repository
+            );
+        
 
-            $saveSuccess = ProductDAO::save($newProduct);
+
+
+            $saveSuccess = ProjectDAO::save($newProject);
             if ($saveSuccess) {
                 return $this->responseJson(201, $json['id']);
             }    

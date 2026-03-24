@@ -1,85 +1,75 @@
 <?php
 
-class MilestoneDAO implements DAO {
+class MilestoneDAO extends BaseDAO implements DAO {
     public static const TABLE = "milestones";
     public static const ID_COLUMN = "milestoneId";
     public static const PROJECT_ID_COLUMN = "projectId";
     public static const NAME_COLUMN = "milestoneName";
     public static const Z_COLUMN = "milestoneZ";
 
+    public static function createObjectFromEnr(array $enr): Milestone
+    {
+        return new Milestone(
+            $enr[self::ID_COLUMN],
+            $enr[self::PROJECT_ID_COLUMN],
+            $enr[self::NAME_COLUMN],
+            $enr[self::Z_COLUMN]
+        );
+    }
+
     /**
      * Retourne un milestone par son id
      * @param int $milestoneId La clé primaire de l'objet à chercher.
      * @return object|null L'objet trouvé ou null si non trouvé.
      */
-    public static function findById(int $milestoneId): ?Milestone {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function findById(int $milestoneId, ?PDO $connexion): ?Milestone 
+    {
+        return self::withConnexion(
+            $connexion, 
+            function(PDO $connexion) use ($milestoneId) {
+                $milestone = null;
 
-        $milestone = null;
+                $selectStatement = TemplaterSQL::SELECT_ALL(self::TABLE);
+                $whereClause = TemplaterSQL::WHERE_EQUALS(self::ID_COLUMN, ":milestoneId");
+                $sql = TemplaterSQL::combine([$selectStatement, $whereClause]);
 
-        $sql = "SELECT * FROM ". self::TABLE .
-                " WHERE ". self::ID_COLUMN ." = :milestoneId";
+                $request = $connexion->prepare($sql);
+                $request->bindParam(":milestoneId", $milestoneId, PDO::PARAM_INT);
+                $request->execute();
 
-        $request = $connexion->prepare($sql);
-        $request->bindParam(":milestoneId", $milestoneId, PDO::PARAM_INT);
-        $request->execute();
-
-        if ($request->rowCount() > 0) { 
-            $enr = $request->fetch(PDO::FETCH_ASSOC);
-            
-            $milestone = new Milestone(
-                $enr[self::ID_COLUMN],
-                $enr[self::PROJECT_ID_COLUMN],
-                $enr[self::NAME_COLUMN],
-                $enr[self::Z_COLUMN]
-            );
-        }
-        $request->closeCursor();
-        ConnexionBD::close();
-        
-        return $milestone;
+                if ($request->rowCount() > 0) { 
+                    $enr = $request->fetch(PDO::FETCH_ASSOC);
+                    $milestone = self::createObjectFromEnr($enr);
+                }
+                return $milestone;
+            });
     }
 
     /**
      * Retourne un array selon une foreign key
      * @param int $projectId
-     * @return void
+     * @return Milestone[]
      */
-    public static function findAllById(int $projectId): array {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function findAllById(int $projectId, ?PDO $connexion): array {
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) use ($projectId) {
+                $milestones = [];
 
-        $milestones = [];
+                $selectStatement = TemplaterSQL::SELECT_ALL(self::TABLE);
+                $whereClause = TemplaterSQL::WHERE_EQUALS(self::PROJECT_ID_COLUMN, ":projectId");
+                $sql = TemplaterSQL::combine([$selectStatement, $whereClause]);
 
-        $sql = 
-            "SELECT * FROM " . self::TABLE
-            ." WHERE ". self::PROJECT_ID_COLUMN ." = :projectId";
+                $request = $connexion->prepare($sql);
+                $request->bindParam(":projectId", $projectId, PDO::PARAM_INT);
+                $request->execute();
 
-
-        $request = $connexion->prepare($sql);
-        $request->bindParam(":projectId", $projectId, PDO::PARAM_INT);
-        $request->execute();
-
-        foreach($request as $enr) {
-            $milestones[] = new Milestone(
-                $enr[self::ID_COLUMN],
-                $enr[self::PROJECT_ID_COLUMN],
-                $enr[self::NAME_COLUMN],
-                $enr[self::Z_COLUMN]
-            );
-        }
-
-        $request->closeCursor();
-        ConnexionBD::close();
-        
-        return $milestones;
+                foreach($request as $enr) {
+                    $milestones[] = MilestoneDAO::createObjectFromEnr($enr);
+                }
+                return $milestones;
+            }
+        );
     }
 
     /**
@@ -87,64 +77,42 @@ class MilestoneDAO implements DAO {
      * 
      * @return array Une liste contenant tous les objets de la table.
      */
-    public static function findAll(): array {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function findAll(?PDO $connexion): array {
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) {
+                $sql = TemplaterSQL::SELECT_ALL(self::TABLE);
+                $request = $connexion->prepare($sql);
+                $request->execute();
 
-        $milestones = [];
-
-        $sql = "SELECT * FROM ". self::TABLE;
-        $request = $connexion->prepare($sql);
-        $request->execute();
-
-        foreach($request as $enr) {
-            $milestones[] = new Milestone(
-                $enr[self::ID_COLUMN],
-                $enr[self::PROJECT_ID_COLUMN],
-                $enr[self::NAME_COLUMN],
-                $enr[self::Z_COLUMN]
-            );
-        }
-
-        $request->closeCursor();
-        ConnexionBD::close();
-        
-        return $milestones;
+                foreach($request as $enr) {
+                    $milestones[] = MilestoneDAO::createObjectFromEnr($enr);
+                }
+                return $milestones;
+            });
     }
 
-    public static function findAllByIds(array $projectIds): array
+    public static function findAllByIds(array $projectIds, ?PDO $connexion): array
     {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) use ($projectIds) {
+                $milestones = [];
 
-        $milestones = [];
+                $selectStatement = TemplaterSQL::SELECT_ALL(self::TABLE);
+                $whereClause = TemplaterSQL::WHERE_IN(self::PROJECT_ID_COLUMN, $projectIds);
+                $sql = TemplaterSQL::combine([$selectStatement, $whereClause]);
 
-        $sql = 
-            "SELECT * FROM ". self::TABLE .
-            " WHERE ". self::PROJECT_ID_COLUMN ." IN (" .
-            implode(",", $projectIds) .")";
+                $request = $connexion->prepare($sql);
+                $request->execute();
 
-        $request = $connexion->prepare($sql);
-        $request->execute();
-
-        foreach ($request as $enr) {
-            $milestones[] = new Milestone(
-                $enr[self::ID_COLUMN],
-                $enr[self::PROJECT_ID_COLUMN],
-                $enr[self::NAME_COLUMN],
-                $enr[self::Z_COLUMN]
-            );
-        }
-        $request->closeCursor();
-        ConnexionBD::close();
-        
-        return $milestones;
+                foreach ($request as $enr) {
+                    $milestones[] = MilestoneDAO::createObjectFromEnr($enr);
+                }
+                
+                return $milestones;
+            }
+        );
     }
 
     /**
@@ -153,26 +121,31 @@ class MilestoneDAO implements DAO {
      * @param object $object L'objet à insérer.
      * @return bool Retourne true si l'opération est réussie, false sinon.
      */
-    public static function save(object $milestone): bool {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function save(object $milestone, PDO $connexion): bool {
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) use ($milestone) {
+                $milestoneName = $milestone->getName();
+                $milestoneZ = $milestone->getZ();
+                $projectId = $milestone->getProjectId();
 
-        $milestoneName = $milestone->getName();
-        $milestoneZ = $milestone->getZ();
-        $projectId = $milestone->getProjectId();
+                $sql = TemplaterSQL::INSERT_INTO(
+                    self::TABLE, 
+                    [self::NAME_COLUMN, self::Z_COLUMN, self::PROJECT_ID_COLUMN]
+                );
 
-        $sql = "INSERT INTO ". self::TABLE .
-                " (". self::NAME_COLUMN .", ". self::Z_COLUMN .", ". self::PROJECT_ID_COLUMN .")" .
-                " VALUES (:milestoneName, :milestoneZ, :projectId)";
+                $request = $connexion->prepare($sql);
+                $request->bindValue(":milestoneName", $milestoneName, PDO::PARAM_STR);
+                $request->bindValue(":milestoneZ", $milestoneZ, PDO::PARAM_INT);
+                $request->bindValue(":projectId", $projectId, PDO::PARAM_INT);
 
-        $request = $connexion->prepare($sql);
-        $request->bindValue(":milestoneName", $milestoneName, PDO::PARAM_STR);
-        $request->bindValue(":milestoneZ", $milestoneZ, PDO::PARAM_INT);
-        $request->bindValue(":projectId", $projectId, PDO::PARAM_INT);
-        return $request->execute();
+                $success = $request->execute();
+                if ($success) {
+                    $milestone->setId((int)$connexion->lastInsertId());
+                }
+
+                return $success;
+        });
     }
 
     /**
@@ -181,31 +154,29 @@ class MilestoneDAO implements DAO {
      * @param object $object L'objet à modifier.
      * @return bool Retourne true si l'opération est réussie, false sinon.
      */
-    public static function update(object $milestone): bool {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function update(object $milestone, PDO $connexion): bool {
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) use ($milestone) {
+                $milestoneId = $milestone->getId();
+                $milestoneName = $milestone->getName();
+                $milestoneZ = $milestone->getZ();
+                $projectId = $milestone->getProjectId();
 
-        $milestoneId = $milestone->getId();
-        $milestoneName = $milestone->getName();
-        $milestoneZ = $milestone->getZ();
-        $projectId = $milestone->getProjectId();
+                $updateStatement = TemplaterSQL::UPDATE(
+                    self::TABLE, 
+                    [self::NAME_COLUMN, self::Z_COLUMN, self::PROJECT_ID_COLUMN]
+                );
+                $whereClause = TemplaterSQL::WHERE_EQUALS(self::ID_COLUMN, ":milestoneId");
+                $sql = TemplaterSQL::combine([$updateStatement, $whereClause]);
 
-        $sql = 
-            "UPDATE ". self::TABLE ." SET ". 
-            self::NAME_COLUMN ." = :milestoneName, ". 
-            self::Z_COLUMN ." = :milestoneZ, ". 
-            self::PROJECT_ID_COLUMN ." = :projectId".
-            " WHERE ". self::ID_COLUMN ." = :id";
-
-        $request = $connexion->prepare($sql);
-        $request->bindValue(":milestoneId", $milestoneId, PDO::PARAM_INT);
-        $request->bindValue(":milestoneName", $milestoneName, PDO::PARAM_STR);
-        $request->bindValue(":milestoneZ", $milestoneZ, PDO::PARAM_INT);
-        $request->bindValue(":projectId", $projectId, PDO::PARAM_INT);
-        return $request->execute();
+                $request = $connexion->prepare($sql);
+                $request->bindValue(":milestoneId", $milestoneId, PDO::PARAM_INT);
+                $request->bindValue(":milestoneName", $milestoneName, PDO::PARAM_STR);
+                $request->bindValue(":milestoneZ", $milestoneZ, PDO::PARAM_INT);
+                $request->bindValue(":projectId", $projectId, PDO::PARAM_INT);
+                return $request->execute();
+            });
     }
 
     /**
@@ -214,22 +185,20 @@ class MilestoneDAO implements DAO {
      * @param object $object L'objet à supprimer.
      * @return bool Retourne true si l'opération est réussie, false sinon.
      */
-    public static function delete(object $milestone): bool {
-        try {
-            $connexion = ConnexionBD::getInstance();
-        } catch (Exception $e) {
-            throw new Exception("Impossible d'obtenir la connexion à la BD");
-        }
+    public static function delete(object $milestone, PDO $connexion): bool {
+        return self::withConnexion(
+            $connexion,
+            function(PDO $connexion) use ($milestone) {
+                $milestoneId = $milestone->getId();
 
-        $milestoneId = $milestone->getId();
+                $deleteStatement = TemplaterSQL::DELETE_FROM(self::TABLE);
+                $whereClause = TemplaterSQL::WHERE_EQUALS(self::ID_COLUMN, ":milestoneId");
+                $sql = TemplaterSQL::combine([$deleteStatement, $whereClause]);
 
-        $sql = 
-            "DELETE FROM ". self::TABLE .
-            " WHERE ". self::ID_COLUMN ." = :milestoneId";
-
-            $request = $connexion->prepare($sql);
-            $request->bindValue(":milestoneId", $milestoneId, PDO::PARAM_INT);
-        return $request->execute();
+                $request = $connexion->prepare($sql);
+                $request->bindValue(":milestoneId", $milestoneId, PDO::PARAM_INT);
+                return $request->execute();
+            });
     }
 
     /**
@@ -247,7 +216,7 @@ class MilestoneDAO implements DAO {
      * @param string $email L'email de l'objet à rechercher.
      * @return object|null L'objet correspondant à l'email ou null si non trouvé.
      */
-    public static function findByEmail(string $email): ?object {
+    public static function findByEmail(string $email, ?PDO $connexion): ?object {
         return null;
     }
 
@@ -257,7 +226,7 @@ class MilestoneDAO implements DAO {
      * @param string $email L'email à vérifier.
      * @return bool Retourne true si un objet avec cet email existe, false sinon.
      */
-    public static function existsByEmail(string $email): bool {
+    public static function existsByEmail(string $email, ?PDO $connexion): bool {
         return false;
     }
 

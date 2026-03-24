@@ -3,32 +3,34 @@
 class SemesterRepository {
 
 
-    public static function findAllSemestersByUserId(int $userId): array 
-    {
-        return $semesters = SemesterDAO::findAllById($userId);
-    }
+    // public static function findAllSemestersByUserId(int $userId): array 
+    // {
+    //     return $semesters = SemesterDAO::findAllById($userId);
+    // }
 
 
     public static function findFullSemester(int $semesterId) : Semester 
     {
-        $semester = SemesterDAO::findById($semesterId);
+        $connexion = null;
+
+        $semester = SemesterDAO::findById($semesterId, $connexion);
 
         // Batch tous les cours, crée un mapping id => course
-        $courses = CourseDAO::findAllById($semesterId);
+        $courses = CourseDAO::findAllById($semesterId, $connexion);
         $courseIds = self::map_ids($courses);
         
         // batch tous les projets, crée un mapping id => project
-        $projects = ProjectDAO::findAllByIds($courseIds);
+        $projects = ProjectDAO::findAllByIds($courseIds, $connexion);
         $projectIds = self::map_ids($projects);
 
         // cree un mapping entre projet et plante
         $plantIds = array_map(fn($p) => $p->getPlantId(), $projects);
-        $plants = PlantDAO::findAllByIds($plantIds);
+        $plants = PlantDAO::findAllByIds($plantIds, $connexion);
 
-        $plantStages = MilestoneDAO::findAllByIds($plantIds);
+        $plantStages = MilestoneDAO::findAllByIds($plantIds, $connexion);
 
         // batch tous les milestones
-        $milestones = MilestoneDAO::findAllByIds($projectIds);
+        $milestones = MilestoneDAO::findAllByIds($projectIds, $connexion);
         
         $semester->setCourses($courses);
 
@@ -55,6 +57,9 @@ class SemesterRepository {
 
         return $semester;
     }
+
+
+
 
     /**
      * Maps an array of idable objects to an array of their IDs.
