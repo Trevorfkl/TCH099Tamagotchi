@@ -3,112 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plante Tamagotchi - Mon Jardin</title>
+    <title>Growchi - Mon Jardin</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container dashboard-layout">
-        
+
         <h1 style="font-size: 24px; margin-top: 0;" id="welcomeText">Bonjour !</h1>
-        <p style="margin-top: -10px; margin-bottom: 30px; color: #6B9F71;">Prends soin de ta plante 🌿</p>
+        <p style="margin-top: -10px; margin-bottom: 20px; color: #6B9F71;">
+            Prends soin de ta plante académique 🌿
+        </p>
+
+        <div class="card-section" style="margin-bottom: 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div>
+                    <h2 style="margin:0; font-size:18px;">Mes récompenses</h2>
+                    <p style="margin:5px 0 0 0; font-size:14px; opacity:0.8;">
+                        Complète tes tâches pour gagner des coins
+                    </p>
+                </div>
+                <div id="coinsBox" style="background:#D4E6D1; padding:10px 16px; border-radius:14px; font-weight:600;">
+                    💰 0 coins
+                </div>
+            </div>
+        </div>
 
         <div class="card-section">
             <div class="garden-status">
                 <div class="garden-icon" id="gardenIcon">🌱</div>
                 <div>
-                    <h2 style="margin: 0; font-size: 18px;" id="gardenText">Graine</h2>
+                    <h2 style="margin: 0; font-size: 18px;" id="gardenText">Jeune pousse</h2>
                     <p style="margin: 0; font-size: 14px; opacity: 0.8;" id="progressText">0% de croissance</p>
                 </div>
             </div>
+
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+            </div>
+
+            <div style="margin-top: 18px;">
+                <h3 style="margin:0 0 12px 0; font-size:16px;">Jardin virtuel</h3>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="gardenGrid">
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
+                </div>
             </div>
         </div>
 
         <div class="card-section">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px;">Mes Tâches</h2>
-            <div id="taskList">
-                </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px; flex-wrap:wrap;">
+                <h2 style="margin: 0; font-size: 18px;">Mes tâches du jour</h2>
+                <span id="todayDate" style="font-size:13px; color:#6B9F71;"></span>
+            </div>
+
+            <div id="taskList"></div>
+
+            <p id="emptyMessage" style="display:none; margin-top:10px; color:#88a892;">
+                Aucune tâche pour aujourd'hui.
+            </p>
         </div>
 
         <div class="btn-container" style="margin-top: 10px;">
             <a href="ajout.html" class="btn btn-primary">Ajouter une tâche</a>
-            <a href="index.html" class="btn btn-secondary">Déconnexion</a>
+            <a href="profile.html" class="btn btn-secondary">Voir mon profil</a>
+            <button type="button" class="btn btn-secondary" onclick="logout()">Déconnexion</button>
         </div>
 
     </div>
 
     <script>
-        const storedName = localStorage.getItem('userName');
-        if (storedName) {
-            const capitalized = storedName.charAt(0).toUpperCase() + storedName.slice(1);
-            document.getElementById('welcomeText').textContent = 'Bonjour, ' + capitalized + ' !';
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
         }
 
-        let tasks = JSON.parse(localStorage.getItem('tasks'));
-        if (!tasks) {
-            tasks = [
-                { id: '1', name: 'Arroser la plante', completed: true },
-                { id: '2', name: 'Faire mes devoirs', completed: false }
-            ];
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('users')) || [];
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function getCurrentUserFromStorage() {
+            const users = getUsers();
+            const storedCurrentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+            if (!storedCurrentUser) return null;
+
+            return users.find(user => user.id === storedCurrentUser.id) || null;
+        }
+
+        function saveCurrentUser(updatedUser) {
+            let users = getUsers();
+            users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
+            saveUsers(users);
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            localStorage.setItem('userName', updatedUser.firstName);
+        }
+
+        function formatTodayDate() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('todayDate').textContent =
+                "Aujourd'hui : " + today.toLocaleDateString('fr-CA', options);
+        }
+
+        function loadHeader() {
+            const user = getCurrentUserFromStorage();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('welcomeText').textContent = 'Bonjour, ' + user.firstName + ' !';
+            document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
+        }
+
+        function getTodayString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getTodayTasks(user) {
+            const today = getTodayString();
+            return (user.tasks || []).filter(task => task.date === today);
         }
 
         function renderTasks() {
+            const user = getCurrentUserFromStorage();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const tasks = getTodayTasks(user);
             const listDiv = document.getElementById('taskList');
+            const emptyMessage = document.getElementById('emptyMessage');
+
             listDiv.innerHTML = '';
             let completedCount = 0;
 
+            if (tasks.length === 0) {
+                emptyMessage.style.display = 'block';
+            } else {
+                emptyMessage.style.display = 'none';
+            }
+
             tasks.forEach(task => {
                 if (task.completed) completedCount++;
+
                 const taskDiv = document.createElement('div');
                 taskDiv.className = 'task-item';
-                taskDiv.onclick = () => toggleTask(task.id);
+                taskDiv.style.alignItems = 'flex-start';
 
                 const checkSymbol = task.completed ? '✓' : '';
                 const checkClass = task.completed ? 'checkbox checked' : 'checkbox';
                 const textClass = task.completed ? 'task-text completed' : 'task-text';
 
                 taskDiv.innerHTML = `
-                    <div class="${checkClass}">${checkSymbol}</div>
-                    <span class="${textClass}">${task.name}</span>
+                    <div class="${checkClass}" onclick="toggleTask('${task.id}')" style="cursor:pointer;">${checkSymbol}</div>
+                    <div style="flex:1;">
+                        <div class="${textClass}" style="font-weight:500;">${task.name}</div>
+                        <div style="font-size:12px; color:#88a892; margin-top:4px;">Date : ${task.date}</div>
+                        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                            <button type="button" onclick="goToEditTask('${task.id}')" style="border:none; background:#D4E6D1; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">
+                                Modifier
+                            </button>
+                            <button type="button" onclick="deleteTask('${task.id}')" style="border:none; background:#f3d7d7; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
                 `;
+
                 listDiv.appendChild(taskDiv);
             });
 
             updateGarden(completedCount, tasks.length);
+            renderGardenGrid(completedCount, tasks.length);
+            loadHeader();
         }
 
-        function toggleTask(id) {
-            tasks = tasks.map(task => {
-                if (task.id === id) return { ...task, completed: !task.completed };
+        function toggleTask(taskId) {
+            const user = getCurrentUserFromStorage();
+            if (!user) return;
+
+            user.tasks = (user.tasks || []).map(task => {
+                if (task.id === taskId) {
+                    const wasCompleted = task.completed;
+                    const updatedTask = { ...task, completed: !task.completed };
+
+                    if (!wasCompleted && updatedTask.completed) {
+                        user.coins = (user.coins || 0) + 10;
+                    }
+
+                    return updatedTask;
+                }
                 return task;
             });
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+
+            saveCurrentUser(user);
             renderTasks();
+        }
+
+        function deleteTask(taskId) {
+            const user = getCurrentUserFromStorage();
+            if (!user) return;
+
+            user.tasks = (user.tasks || []).filter(task => task.id !== taskId);
+            saveCurrentUser(user);
+            renderTasks();
+        }
+
+        function goToEditTask(taskId) {
+            localStorage.setItem('editTaskId', taskId);
+            window.location.href = 'modifier.html';
         }
 
         function updateGarden(completed, total) {
             const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('progressText').textContent = progress + '% de croissance';
 
             const iconEl = document.getElementById('gardenIcon');
             const textEl = document.getElementById('gardenText');
 
-            if (progress === 100) {
+            if (progress === 100 && total > 0) {
                 iconEl.textContent = '🌸';
-                textEl.textContent = 'Plante fleurie !';
+                textEl.textContent = 'Plante fleurie';
             } else if (progress >= 50) {
                 iconEl.textContent = '🪴';
-                textEl.textContent = 'Plante en pot';
+                textEl.textContent = 'Plante en croissance';
             } else {
                 iconEl.textContent = '🌱';
                 textEl.textContent = 'Jeune pousse';
             }
         }
 
+        function renderGardenGrid(completed, total) {
+            const gardenGrid = document.getElementById('gardenGrid');
+            gardenGrid.innerHTML = '';
+
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            for (let i = 0; i < 6; i++) {
+                const cell = document.createElement('div');
+                cell.style.height = '60px';
+                cell.style.borderRadius = '12px';
+                cell.style.display = 'flex';
+                cell.style.alignItems = 'center';
+                cell.style.justifyContent = 'center';
+                cell.style.fontSize = '24px';
+
+                if (progress === 100) {
+                    cell.style.background = '#bfe3c2';
+                    cell.textContent = '🌸';
+                } else if (progress >= 50) {
+                    cell.style.background = '#d8ead3';
+                    cell.textContent = '🪴';
+                } else {
+                    cell.style.background = '#D4E6D1';
+                    cell.textContent = '🌱';
+                }
+
+                gardenGrid.appendChild(cell);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('userName');
+            window.location.href = 'index.html';
+        }
+
+        formatTodayDate();
+        loadHeader();
         renderTasks();
     </script>
 </body>
