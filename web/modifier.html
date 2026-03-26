@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growchi - Ajouter une activité</title>
+    <title>Growchi - Modifier une activité</title>
     <link rel="stylesheet" href="style.css">
     <style>
         select {
@@ -33,31 +33,22 @@
             font-size: 14px;
             color: var(--text-main);
         }
-
-        .type-preview {
-            margin-top: 8px;
-            font-size: 14px;
-            color: #6B9F71;
-        }
     </style>
 </head>
 <body>
 
     <div class="app-container dashboard-layout">
 
-        <h1 style="margin-top:0; margin-bottom:10px;">Ajouter une activité 🌱</h1>
+        <h1 style="margin-top:0; margin-bottom:10px;">Modifier une activité ✏️</h1>
         <p style="margin-top:0; margin-bottom:24px; color:#6B9F71;">
-            Planifie une journée d’étude, un TP, un devoir ou un examen dans ton calendrier.
+            Mets à jour la date, le type ou la description de ton activité.
         </p>
 
         <div class="helper-box">
-            Cette activité sera ajoutée à ton calendrier académique et représentée par une plante selon son type.
-            <div class="type-preview">
-                🌱 Étude &nbsp; | &nbsp; 🪴 TP / Devoir &nbsp; | &nbsp; 🌸 Examen
-            </div>
+            Cette page simule la modification d’une activité académique dans le calendrier.
         </div>
 
-        <form id="formActivite">
+        <form id="editForm">
 
             <div class="form-group">
                 <label for="date">Date</label>
@@ -83,8 +74,8 @@
             <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
 
             <div class="btn-container" style="margin-top: 30px;">
-                <button type="submit" class="btn btn-primary">Ajouter l’activité</button>
-                <a href="dashboard.html" class="btn btn-secondary">Retour</a>
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                <a href="dashboard.html" class="btn btn-secondary">Annuler</a>
             </div>
 
         </form>
@@ -118,13 +109,23 @@
         }
 
         const currentUser = getCurrentUser();
-        if (!currentUser) {
-            window.location.href = 'index.html';
+        const editTaskId = localStorage.getItem('editTaskId');
+
+        if (!currentUser || !editTaskId) {
+            window.location.href = 'dashboard.html';
         }
 
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        const taskToEdit = (currentUser.tasks || []).find(task => task.id === editTaskId);
 
-        document.getElementById('formActivite').addEventListener('submit', function(e) {
+        if (!taskToEdit) {
+            window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('date').value = taskToEdit.date || '';
+        document.getElementById('type').value = taskToEdit.type || '';
+        document.getElementById('description').value = taskToEdit.name || '';
+
+        document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const date = document.getElementById('date').value;
@@ -145,21 +146,20 @@
                 return;
             }
 
-            if (!user.tasks) {
-                user.tasks = [];
-            }
+            user.tasks = (user.tasks || []).map(task => {
+                if (task.id === editTaskId) {
+                    return {
+                        ...task,
+                        name: description,
+                        type: type,
+                        date: date
+                    };
+                }
+                return task;
+            });
 
-            const newTask = {
-                id: Date.now().toString(),
-                name: description,
-                type: type,
-                date: date,
-                completed: false
-            };
-
-            user.tasks.push(newTask);
             saveCurrentUser(user);
-
+            localStorage.removeItem('editTaskId');
             window.location.href = 'dashboard.html';
         });
     </script>
