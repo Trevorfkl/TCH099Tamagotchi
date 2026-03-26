@@ -4,78 +4,104 @@ class Validators {
     public static function validatePlant(Plant $plant): void
     {
         if (empty($plant->getName())) {
-            throw new Exception("Le nom de la plante ne peut pas être vide.");
+            throw new Exception("Nom de plante est vide.");
         }
         if (count($plant->getPlantStages()) === 0) {
-            throw new Exception("La plante doit avoir au moins une étape.");
+            throw new Exception("");
         }
+        return true;
     }
 
     public static function validatePlantStage(PlantStage $plantStage): void
     {
         if (empty($plantStage->getImage())) {
-            throw new Exception("L'image de l'étape de la plante ne peut pas être vide.");
+            return false;
         }
         if ($plantStage->getZ() < 0) {
-            throw new Exception("La valeur Z de l'étape de la plante doit être positive.");
+            return false;
         }
+        return true;
     }
+    
 
     public static function validateCourse(Course $course): void
     {
         if (empty($course->getName())) {
-            throw new Exception("Le nom du cours ne peut pas être vide.");
+            return false;
         }
         if (empty($course->getCode())) {
-            throw new Exception("Le code du cours ne peut pas être vide.");
+            return false;
         }
-     }
+        return true;
+    }
 
     public static function validateSemester(Semester $semester): void
     {
         if (empty($semester->getStartDate()) || empty($semester->getEndDate())) {
-            throw new Exception("Les dates de début et de fin du semestre ne peuvent pas être vides.");
+            return false;
         }
         if ($semester->getStartDate() > $semester->getEndDate()) {
-            throw new Exception("La date de début du semestre doit être antérieure à la date de fin.");
+            return false;
         }
+        return true;
     }
 
     public static function validateProject(Project $project): void
     {
         if (empty($project->getName())) {
-            throw new Exception("Le nom du projet ne peut pas être vide.");
+            return false;
         }
-        if (empty($project->getDueDate())) {
-            throw new Exception("La date de remise du projet ne peut pas être vide.");
+        if (empty($project->getDueDateTime())) {
+            return false;
         }
         // TODO: valider le format de la date
-        if ($project->getDueDate() < date('Y-m-d')) {
-            throw new Exception("La date de remise du projet doit être dans le futur.");
+        if ($project->getDueDateTime() < date('Y-m-d H:i:s')) {
+            return false;
         }
         if (empty($project->getStatus())) {
-            throw new Exception("Le statut du projet ne peut pas être vide.");
+            return false;
         }
         if (!in_array($project->getStatus(), ['not started', 'in progress', 'completed'])) {
-            throw new Exception("Le statut du projet doit être 'not started', 'in progress' ou 'completed'.");
+            return false;
         }
          if (count($project->getMilestones()) === 0) {
-            throw new Exception("Le projet doit avoir au moins un jalon.");
+            return false;
         }
+        return true;
     }
 
     public static function validateMilestone(Milestone $milestone): void
     {
-        if (empty($milestone->getProjectId())) {
-            throw new Exception("L'ID du projet ne peut pas être vide.");
-        }
+        // Milestones existe sans projet avant que le projet soit sauvegardé a 
+        // la base de données, donc on peut pas valider la presence d'un projectId
+        
+        // if (empty($milestone->getProjectId())) {
+        //     return false;
+        // }
         if (empty($milestone->getName())) {
-            throw new Exception("Le nom du jalon ne peut pas être vide.");
+            return false;
         }
         if (empty($milestone->getZ())) {
-            throw new Exception("La valeur Z du jalon ne peut pas être vide.");
+            return false;
         }
+        return true;
     }
 
-    
+    public static function validateUser(User $user): void
+    {
+        if (empty($user->getFirstName())) {
+            return false;
+        }
+        if (empty($user->getLastName())) {
+            return false;
+        }
+        if (empty($user->getEmail())) {
+            return false;
+        }
+        if (empty($user->getHashedPassword())) {
+            return false;
+        }
+        //TODO: valider le role 
+        return true;
+    }
 }

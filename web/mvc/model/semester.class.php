@@ -5,8 +5,8 @@ class Semester implements JsonSerializable, Idable {
     private int $userId;
     private string $season;
     private int $year;
-    private string $startDate;
-    private string $endDate;
+    private DateTime $startDate;
+    private DateTime $endDate;
     private array $courses;
 
     public function __construct(
@@ -14,8 +14,8 @@ class Semester implements JsonSerializable, Idable {
         int $userId,
         string $season,
         int $year,
-        string $startDate,
-        string $endDate,
+        DateTime $startDate,
+        DateTime $endDate,
         array $courses
     ) {
         $this->id =  $id;
@@ -43,11 +43,11 @@ class Semester implements JsonSerializable, Idable {
     {
         return $this->year;
     }
-    public function getStartDate(): string
+    public function getStartDate(): DateTime
     {
         return $this->startDate;
     }
-    public function getEndDate(): string
+    public function getEndDate(): DateTime
     {
         return $this->endDate;
     }

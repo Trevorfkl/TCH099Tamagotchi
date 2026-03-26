@@ -13,6 +13,18 @@ class TransactionResult
         $this->errorMessage = $errorMessage;
     }
 
+    
+
+    public static function emptyResult(): TransactionResult
+    {
+        return new TransactionResult(true, [], null);
+    }
+
+    public static function errorResult($errorMessage = null): TransactionResult
+    {
+        return new TransactionResult(false, [], ($errorMessage === null) ? "Erreur non specifiee" : $errorMessage);
+    }
+
     public function isSuccess(): bool
     {
         return $this->success;

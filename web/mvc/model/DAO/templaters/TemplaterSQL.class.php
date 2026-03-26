@@ -58,12 +58,35 @@ class TemplaterSQL
         return "WHERE $colName IN ($placeholders)";
     }
 
-    public static function INSERT_INTO(string $tableName, array $colNames): string
+    public static function WHERE_LIKE(string $colName, array $possibleValues): string
+    {
+        $likeClauses = implode(' OR ', array_map(function($value) use ($colName) {
+            return "$colName LIKE :$value";
+        }, $possibleValues));
+
+        // WHERE plantName LIKE :sunflower OR plantName LIKE :rose..
+        return "WHERE $likeClauses";
+    }
+
+    /**
+     * @param string[] $colNames
+     * @param mixed[][]
+     */
+    
+    public static function INSERT_INTO(string $tableName, array $colNames, ?array $valuesMatrix = null): string
     {
         $colList = implode(', ', $colNames);
-        $placeholders = implode(', ', array_map(function($name) {
-            return ":$name";
-        }, $colNames));
+        
+        if ($valuesMatrix !== null) {
+            // array(array(1,2,3), array(4,5,6), ...) -> (1,2,3), (4,5,6), ...
+            $valuesList = implode(', ', array_map(function($values) {
+                return "(". implode(', ', $values) .')';
+            }, $valuesMatrix));
+            
+            return "INSERT INTO $tableName ($colList) VALUES $valuesList";
+        }
+        $placeholders = implode(", ", array_map(function($colName) { return ":$colName"; }, $colNames));
+
         return "INSERT INTO $tableName ($colList) VALUES ($placeholders)";
     }
 

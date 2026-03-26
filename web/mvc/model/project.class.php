@@ -5,13 +5,13 @@ include_once("./model/utils/projectUtils.class.php");
 class Project implements JsonSerializable, Idable  
 {
 	private ?int $id;
-	private string $name;
-	private string $dueDate;
-	private string $status; // en cours, complete, echoue
-	// private ?Course $course;
-	private Plant $plant;
     private ?int $courseId;
     private ?int $plantId;
+	private string $name;
+	private DateTime $dueDateTime;
+	private string $status; // en cours, complete, echoue
+	// private ?Course $course;
+	private ?Plant $plant;
 	private ?int $currentMilestoneIndex;
 	private array $milestones; // 0 to 10 milestones
 
@@ -27,34 +27,34 @@ class Project implements JsonSerializable, Idable
      * @param ?int $id id du projet si présent
      * @param ?int $courseId id du cours associé au projet
      * @param string $name nom du projet
-     * @param string $dueDate date de remise, format dd-mm-yyyy
+     * @param DateTime $dueDateTime date de remise, format dd-mm-yyyy
      * @param string $status Statut du project, doit match le CHECK de la bd
      * @param int $plantId id de la plante associée au projet
      * param Course $course l'object associé au cours
      * @param ?int $currentMilestoneIndex l'index du milestone présentement actif.
-     * @param Plant $plant l'object associé à la plante
+     * @param ?Plant $plant l'object associé à la plante
      * @param Milestone[] $milestones array des milestones associés au project
      */
 	public function __construct(
 		?int $id,
         ?int $courseId,
+        int $plantId,
         string $name,
-        string $dueDate,
+        DateTime $dueDateTime,
         string $status,
         // Course $course,
-        int $plantId,
         ?int $currentMilestoneIndex, // devrait toujours etre saved
-        Plant $plant,
+        ?Plant $plant,
         array $milestones
     ) {
 	    $this->id = $id;
         $this->courseId = $courseId;
+		$this->plantId = $plantId;	
 		$this->name = $name;
-		$this->dueDate = $dueDate;
+		$this->dueDateTime = $dueDateTime;
 		$this->status = $status;
 		// $this->course = $course;
-		// $this->plant = $plant;
-		$this->plantId = $plantId;	
+		$this->plant = $plant ?? null;
         $this->currentMilestoneIndex = ($currentMilestoneIndex) ?? 0;
 		$this->milestones = $milestones;		
 		$this->stageIndicesToUse = ProjectUtils::evenlySpreadIndices(
@@ -80,9 +80,9 @@ class Project implements JsonSerializable, Idable
     {
         return $this->name;
     }
-    public function getDueDate(): string
+    public function getDueDateTime(): DateTime
     {
-        return $this->dueDate;
+        return $this->dueDateTime;
     }
     public function getStatus(): string
     {
@@ -124,9 +124,9 @@ class Project implements JsonSerializable, Idable
     {
         $this->name = $name;
     }
-    public function setDueDate(string $dueDate): void
+    public function setDueDateTime(DateTime $dueDateTime): void
     {
-        $this->dueDate = $dueDate;
+        $this->dueDateTime = $dueDateTime;
     }
     public function setStatus(string $status): void
     {
@@ -151,6 +151,12 @@ class Project implements JsonSerializable, Idable
         $this->stageIndicesToUse = $stageIndicesToUse;
     }
 
+    public function addMilestone(Milestone $milestone): void
+    {
+        $this->milestones[] = $milestone;
+    }
+
+    // TODO: Check if DateTime is json serializable
     public function jsonSerialize(): mixed
     {
         return [
@@ -158,7 +164,7 @@ class Project implements JsonSerializable, Idable
             'courseId' => $this->courseId,
             "plantId" => $this->plantId,
             'name' => $this->name,
-            'dueDate' => $this->dueDate,
+            'dueDate' => $this->dueDateTime,
             'currentMilestoneIndex' => $this->currentMilestoneIndex, // devrait toujours etre saved
             'status' => $this->status,
             'milestones' => $this->milestones,
