@@ -5,6 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growchi - Mon Jardin</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .calendar-day-name {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6B9F71;
+        }
+
+        .calendar-cell {
+            min-height: 72px;
+            background: #F4F9F1;
+            border: 2px solid #C8E2C6;
+            border-radius: 14px;
+            padding: 6px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .calendar-cell:hover {
+            transform: scale(1.02);
+            border-color: #6B9F71;
+        }
+
+        .calendar-cell.selected {
+            border-color: #2C4C3B;
+            background: #EAF4E5;
+        }
+
+        .calendar-cell.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2C4C3B;
+        }
+
+        .calendar-plant {
+            font-size: 22px;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .calendar-label {
+            font-size: 10px;
+            text-align: center;
+            color: #6B9F71;
+            line-height: 1.1;
+            min-height: 22px;
+        }
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #2C4C3B;
+        }
+
+        .legend-item {
+            background: #F4F9F1;
+            border: 1px solid #C8E2C6;
+            border-radius: 10px;
+            padding: 6px 10px;
+        }
+    </style>
 </head>
 <body>
 
@@ -12,7 +100,7 @@
 
         <h1 style="font-size: 24px; margin-top: 0;" id="welcomeText">Bonjour !</h1>
         <p style="margin-top: -10px; margin-bottom: 20px; color: #6B9F71;">
-            Prends soin de ta plante académique 🌿
+            Organise ton mois et fais pousser ton jardin académique 🌿
         </p>
 
         <div class="card-section" style="margin-bottom: 15px;">
@@ -20,12 +108,30 @@
                 <div>
                     <h2 style="margin:0; font-size:18px;">Mes récompenses</h2>
                     <p style="margin:5px 0 0 0; font-size:14px; opacity:0.8;">
-                        Complète tes tâches pour gagner des coins
+                        Complète tes activités pour gagner des coins
                     </p>
                 </div>
                 <div id="coinsBox" style="background:#D4E6D1; padding:10px 16px; border-radius:14px; font-weight:600;">
                     💰 0 coins
                 </div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="calendar-header">
+                <button class="btn btn-secondary" style="width:auto; padding:10px 14px;" onclick="changeMonth(-1)">◀</button>
+                <h2 id="calendarTitle" style="margin:0; font-size:18px;">Calendrier</h2>
+                <button class="btn btn-secondary" style="width:auto; padding:10px 14px;" onclick="changeMonth(1)">▶</button>
+            </div>
+
+            <div class="calendar-grid" id="calendarDaysHeader"></div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div class="legend-row">
+                <div class="legend-item">🌱 Étude</div>
+                <div class="legend-item">🪴 TP / Devoir</div>
+                <div class="legend-item">🌸 Examen</div>
+                <div class="legend-item">✅ Journée complétée</div>
             </div>
         </div>
 
@@ -41,35 +147,23 @@
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
             </div>
-
-            <div style="margin-top: 18px;">
-                <h3 style="margin:0 0 12px 0; font-size:16px;">Jardin virtuel</h3>
-                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="gardenGrid">
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                    <div style="height:60px; border-radius:12px; background:#D4E6D1; display:flex; align-items:center; justify-content:center;">🌱</div>
-                </div>
-            </div>
         </div>
 
         <div class="card-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px; flex-wrap:wrap;">
-                <h2 style="margin: 0; font-size: 18px;">Mes tâches du jour</h2>
-                <span id="todayDate" style="font-size:13px; color:#6B9F71;"></span>
+                <h2 style="margin: 0; font-size: 18px;">Activités du jour sélectionné</h2>
+                <span id="selectedDateText" style="font-size:13px; color:#6B9F71;"></span>
             </div>
 
             <div id="taskList"></div>
 
             <p id="emptyMessage" style="display:none; margin-top:10px; color:#88a892;">
-                Aucune tâche pour aujourd'hui.
+                Aucune activité pour cette journée.
             </p>
         </div>
 
         <div class="btn-container" style="margin-top: 10px;">
-            <a href="ajout.html" class="btn btn-primary">Ajouter une tâche</a>
+            <a href="ajout.html" class="btn btn-primary">Ajouter une activité</a>
             <a href="profile.html" class="btn btn-secondary">Voir mon profil</a>
             <button type="button" class="btn btn-secondary" onclick="logout()">Déconnexion</button>
         </div>
@@ -77,6 +171,9 @@
     </div>
 
     <script>
+        let currentDate = new Date();
+        let selectedDate = new Date().toISOString().split('T')[0];
+
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
         if (!currentUser) {
@@ -108,13 +205,6 @@
             localStorage.setItem('userName', updatedUser.firstName);
         }
 
-        function formatTodayDate() {
-            const today = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('todayDate').textContent =
-                "Aujourd'hui : " + today.toLocaleDateString('fr-CA', options);
-        }
-
         function loadHeader() {
             const user = getCurrentUserFromStorage();
             if (!user) {
@@ -126,13 +216,106 @@
             document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
         }
 
-        function getTodayString() {
-            return new Date().toISOString().split('T')[0];
+        function formatDisplayDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('fr-CA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         }
 
-        function getTodayTasks(user) {
-            const today = getTodayString();
-            return (user.tasks || []).filter(task => task.date === today);
+        function getTasksForDate(user, dateString) {
+            return (user.tasks || []).filter(task => task.date === dateString);
+        }
+
+        function getPlantForDay(tasks) {
+            if (tasks.length === 0) {
+                return { emoji: '', label: '' };
+            }
+
+            const allCompleted = tasks.every(task => task.completed);
+            if (allCompleted) {
+                return { emoji: '✅', label: 'Complété' };
+            }
+
+            const hasExam = tasks.some(task => task.type === 'examen');
+            const hasTP = tasks.some(task => task.type === 'tp' || task.type === 'devoir');
+            const hasStudy = tasks.some(task => task.type === 'etude');
+
+            if (hasExam) return { emoji: '🌸', label: 'Examen' };
+            if (hasTP) return { emoji: '🪴', label: 'TP / Devoir' };
+            if (hasStudy) return { emoji: '🌱', label: 'Étude' };
+
+            return { emoji: '🌱', label: 'Activité' };
+        }
+
+        function renderCalendar() {
+            const daysHeader = document.getElementById('calendarDaysHeader');
+            const grid = document.getElementById('calendarGrid');
+            const title = document.getElementById('calendarTitle');
+            const user = getCurrentUserFromStorage();
+
+            if (!user) return;
+
+            daysHeader.innerHTML = '';
+            grid.innerHTML = '';
+
+            const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            dayNames.forEach(day => {
+                const headerCell = document.createElement('div');
+                headerCell.className = 'calendar-day-name';
+                headerCell.textContent = day;
+                daysHeader.appendChild(headerCell);
+            });
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            title.textContent = currentDate.toLocaleDateString('fr-CA', {
+                month: 'long',
+                year: 'numeric'
+            });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            let startOffset = firstDay.getDay();
+            startOffset = startOffset === 0 ? 6 : startOffset - 1;
+
+            for (let i = 0; i < startOffset; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-cell empty';
+                grid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const cellDate = new Date(year, month, day);
+                const dateString = cellDate.toISOString().split('T')[0];
+                const tasks = getTasksForDate(user, dateString);
+                const plant = getPlantForDay(tasks);
+
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+
+                if (dateString === selectedDate) {
+                    cell.classList.add('selected');
+                }
+
+                cell.onclick = () => {
+                    selectedDate = dateString;
+                    renderCalendar();
+                    renderTasks();
+                };
+
+                cell.innerHTML = `
+                    <div class="calendar-day-number">${day}</div>
+                    <div class="calendar-plant">${plant.emoji}</div>
+                    <div class="calendar-label">${plant.label}</div>
+                `;
+
+                grid.appendChild(cell);
+            }
         }
 
         function renderTasks() {
@@ -142,9 +325,11 @@
                 return;
             }
 
-            const tasks = getTodayTasks(user);
+            const tasks = getTasksForDate(user, selectedDate);
             const listDiv = document.getElementById('taskList');
             const emptyMessage = document.getElementById('emptyMessage');
+
+            document.getElementById('selectedDateText').textContent = formatDisplayDate(selectedDate);
 
             listDiv.innerHTML = '';
             let completedCount = 0;
@@ -166,11 +351,20 @@
                 const checkClass = task.completed ? 'checkbox checked' : 'checkbox';
                 const textClass = task.completed ? 'task-text completed' : 'task-text';
 
+                const typeLabel =
+                    task.type === 'etude' ? 'Étude' :
+                    task.type === 'examen' ? 'Examen' :
+                    task.type === 'tp' ? 'TP' :
+                    task.type === 'devoir' ? 'Devoir' :
+                    'Activité';
+
                 taskDiv.innerHTML = `
                     <div class="${checkClass}" onclick="toggleTask('${task.id}')" style="cursor:pointer;">${checkSymbol}</div>
                     <div style="flex:1;">
                         <div class="${textClass}" style="font-weight:500;">${task.name}</div>
-                        <div style="font-size:12px; color:#88a892; margin-top:4px;">Date : ${task.date}</div>
+                        <div style="font-size:12px; color:#88a892; margin-top:4px;">
+                            ${typeLabel} • ${task.date}
+                        </div>
                         <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
                             <button type="button" onclick="goToEditTask('${task.id}')" style="border:none; background:#D4E6D1; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">
                                 Modifier
@@ -185,9 +379,32 @@
                 listDiv.appendChild(taskDiv);
             });
 
-            updateGarden(completedCount, tasks.length);
-            renderGardenGrid(completedCount, tasks.length);
+            updateGlobalGarden(user);
             loadHeader();
+        }
+
+        function updateGlobalGarden(user) {
+            const tasks = user.tasks || [];
+            const total = tasks.length;
+            const completed = tasks.filter(task => task.completed).length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '% de croissance';
+
+            const iconEl = document.getElementById('gardenIcon');
+            const textEl = document.getElementById('gardenText');
+
+            if (progress === 100 && total > 0) {
+                iconEl.textContent = '🌸';
+                textEl.textContent = 'Jardin en fleurs';
+            } else if (progress >= 50) {
+                iconEl.textContent = '🪴';
+                textEl.textContent = 'Jardin en croissance';
+            } else {
+                iconEl.textContent = '🌱';
+                textEl.textContent = 'Jeune jardin';
+            }
         }
 
         function toggleTask(taskId) {
@@ -209,6 +426,7 @@
             });
 
             saveCurrentUser(user);
+            renderCalendar();
             renderTasks();
         }
 
@@ -218,6 +436,7 @@
 
             user.tasks = (user.tasks || []).filter(task => task.id !== taskId);
             saveCurrentUser(user);
+            renderCalendar();
             renderTasks();
         }
 
@@ -226,55 +445,9 @@
             window.location.href = 'modifier.html';
         }
 
-        function updateGarden(completed, total) {
-            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progressText').textContent = progress + '% de croissance';
-
-            const iconEl = document.getElementById('gardenIcon');
-            const textEl = document.getElementById('gardenText');
-
-            if (progress === 100 && total > 0) {
-                iconEl.textContent = '🌸';
-                textEl.textContent = 'Plante fleurie';
-            } else if (progress >= 50) {
-                iconEl.textContent = '🪴';
-                textEl.textContent = 'Plante en croissance';
-            } else {
-                iconEl.textContent = '🌱';
-                textEl.textContent = 'Jeune pousse';
-            }
-        }
-
-        function renderGardenGrid(completed, total) {
-            const gardenGrid = document.getElementById('gardenGrid');
-            gardenGrid.innerHTML = '';
-
-            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-            for (let i = 0; i < 6; i++) {
-                const cell = document.createElement('div');
-                cell.style.height = '60px';
-                cell.style.borderRadius = '12px';
-                cell.style.display = 'flex';
-                cell.style.alignItems = 'center';
-                cell.style.justifyContent = 'center';
-                cell.style.fontSize = '24px';
-
-                if (progress === 100) {
-                    cell.style.background = '#bfe3c2';
-                    cell.textContent = '🌸';
-                } else if (progress >= 50) {
-                    cell.style.background = '#d8ead3';
-                    cell.textContent = '🪴';
-                } else {
-                    cell.style.background = '#D4E6D1';
-                    cell.textContent = '🌱';
-                }
-
-                gardenGrid.appendChild(cell);
-            }
+        function changeMonth(step) {
+            currentDate.setMonth(currentDate.getMonth() + step);
+            renderCalendar();
         }
 
         function logout() {
@@ -283,8 +456,8 @@
             window.location.href = 'index.html';
         }
 
-        formatTodayDate();
         loadHeader();
+        renderCalendar();
         renderTasks();
     </script>
 </body>
