@@ -47,58 +47,58 @@ class RestControllerProject
         return $statusMessages[$code] ?? "Unknown Status";
     }
 
+    private function statusMessageFromTransactionResult(TransactionResult $transactionResult) 
+    {
+
+    }
+
     private function createProjectFromRequest() {
         $data = file_get_contents('php://input');
         $json = json_decode($data, true);
 
         Transaction::run(function() use ($json) {
-            try {
-                $plantId = $json['plantId'];
-                $plant = PlantDAO::findById($plantId);
-                if (!$plant) {
-                    throw new Exception("Plant with id $plantId not found");
-                }
-
-                $project = new Project(
-                    $json['id'] ?? null,
-                    $json['courseId'] ?? null,
-                    $json['plantId'],
-                    $json['name'],
-                    $json['dueDateTime'],
-                    $json['status'],
-                    $json['currentMilestoneIndex'],
-                    null, // plant object will be set in the repository
-                    [] // milestones will be set in the repository
-                );
-                Validators::validateProject($project);
-
-                $projectSaveSuccess = ProjectDAO::save($project);
-                if (!$projectSaveSuccess) {
-                    throw new Exception("Erreur lors de la sauvegarde du projet");
-                }
-
-                $project->setPlant($plant);
-
-                $JsonMilestones = $json["milestones"];
-                foreach ($JsonMilestones as $milestoneJson) {
-                    $index = 0;
-                    $milestone = new Milestone(
-                        $milestoneJson["id"] ?? null,
-                        $project->getId(),
-                        $milestoneJson["name"],
-                        $index++,
-                    );
-                    Validators::validateMilestone($milestone);
-                    $project->addMilestone($milestone);
-                }
-                $milestonesSaveSuccess = MilestoneDAO::saveAll($project->getMilestones());
-                if (!$milestonesSaveSuccess) {
-                    throw new Exception("Erreur lors de la sauvegarde des milestones");
-                }
-            } catch (Exception $e) {
-                $err = $e->getMessage();
-                throw new Exception("Projet invalide:  $err");
+            $plantId = $json['plantId'];
+            $plant = PlantDAO::findById($plantId);
+            if (!$plant) {
+                throw new Exception("Plant with id $plantId not found");
             }
+
+            $project = new Project(
+                $json['id'] ?? null,
+                $json['courseId'] ?? null,
+                $json['plantId'],
+                $json['name'],
+                $json['dueDateTime'],
+                $json['status'],
+                $json['currentMilestoneIndex'],
+                null, // plant object will be set in the repository
+                [] // milestones will be set in the repository
+            );
+            Validators::validateProject($project);
+
+            $projectSaveSuccess = ProjectDAO::save($project);
+            if (!$projectSaveSuccess) {
+                throw new Exception("Erreur lors de la sauvegarde du projet");
+            }
+
+            $project->setPlant($plant);
+
+            $JsonMilestones = $json["milestones"];
+            foreach ($JsonMilestones as $milestoneJson) {
+                $index = 0;
+                $milestone = new Milestone(
+                    $milestoneJson["id"] ?? null,
+                    $project->getId(),
+                    $milestoneJson["name"],
+                    $index++,
+                );
+                Validators::validateMilestone($milestone);
+                $project->addMilestone($milestone);
+            }
+            $milestonesSaveSuccess = MilestoneDAO::saveAll($project->getMilestones());
+            if (!$milestonesSaveSuccess) {
+                throw new Exception("Erreur lors de la sauvegarde des milestones");
+            }          
         });
         
         if (Transaction::isSuccess()) {
@@ -110,51 +110,123 @@ class RestControllerProject
     /**
      * S'attend a recevoir des Zs pour chaques milestone
      * @throws Exception
-     * @return void
      */
     private function addMilestonesFromRequest() {
         $data = file_get_contents('php://input');
         $json = json_decode($data, true);
 
         Transaction::run(function() use ($json) {
-            try {
-                if (empty($json)) {
-                    throw new Exception('Pas de nouveaux milestones en argument.');
-                }
-                $currentProject = ProjectDAO::findById($json['projectId']);
-                if (!$currentProject) {
-                    throw new Exception('Pas de projet associe au projectId');
-                }
-                $currentMilestones = MilestoneDAO::findByProjectId($json['projectId']);
-                
-                
-                $currentMilestoneZ = $currentProject->getCurrentMilestoneIndex();
+            $project = ProjectDAO::findById($json['projectId']);
+            if (!$project) {
+                throw new Exception('Pas de projet associe au projectId');
+            }
+            $oldMilestones = MilestoneDAO::findByProjectId($json['projectId']);
+            
+            $oldMilestoneZ = $project->getCurrentMilestoneIndex();
+            
+            foreach ($json as $milestoneJson) {
+                $milestone = new Milestone(
+                    $milestoneJson["id"] ?? null,
+                    $milestoneJson["projectId"],
+                    $milestoneJson["name"],
+                    $milestoneJson["Z"],
+                );
+                Validators::validateMilestone($milestone);
+                $newMilestones[] = $milestone;
+            }
+            if (!empty($oldMilestones)) {
+                $activeProjectMilestone = $oldMilestones[$oldMilestoneZ];
 
-                foreach ($json as $milestoneJson) {
-                    $index = 0;
-                    $milestone = new Milestone(
-                        $milestoneJson["id"] ?? null,
-                        $milestoneJson["projectId"],
-                        $milestoneJson["name"],
-                        $milestoneJson["Z"],
+                $oldOldOrderKeys = array_map(fn($milestone) => $milestone->getZ(), $oldMilestones);
+
+                Helper::updateSortableObjectAttribute(
+                    $oldMilestones, $newMilestones, 
+                    fn($milestone) => $milestone->getZ(), fn($milestone) => $milestone->setZ()
                     );
-                    Validators::validateMilestone($milestone);
-                    $newMilestones[] = $milestone;
-                }
-                if (!empty($currentMilestones)) {
-                    
-                }
-                while (true) {
+                
+                $newOldOrderKeys = array_map(fn($milestone) => $milestone->getZ(), $oldMilestones);
+                Validators::validateOrderKeys($oldMilestones, $newMilestones, fn($item) => $item->getZ());
 
-                }
+                $project->setCurrentMilestoneIndex($activeProjectMilestone->getZ());
+                ProjectDAO::update($project);
+                // Trouve les indices où il y a eu des mutations.
+                $indicesWhereModified = array_diff_assoc($newOldOrderKeys, $oldOldOrderKeys);
+                foreach (array_keys($indicesWhereModified) as $indexWhereModified) {
+                    MilestoneDAO::update($oldMilestones[$indexWhereModified]);
+                }   
+            } 
+            Validators::validateOrderKeys($oldMilestones, $newMilestones, fn($item) => $item->getZ());
+            
+            MilestoneDAO::saveAll($newMilestones);
+        });
 
-                $milestonesSaveSuccess = MilestoneDAO::saveAll($project->getMilestones());
-                if (!$milestonesSaveSuccess) {
-                    throw new Exception("Erreur lors de la sauvegarde des milestones");
-                }
+        // TODO: faire quelque chose avec le resultat de la transaction 
+        if (Transaction::isSuccess()) {
+            // TODO: valeur de retour pour l'operation.
+            return $this->responseJson(201, "PLACERHOLDER PLEASE CHANGES");
+        }
+        return $this->notFoundResponse(); 
+    }
+
+    private function incrementActiveMilestoneFromRequest() {
+        // TODO: PUT request, je penses qu'on n'accede pas aux donnees de cette facon.
+        $data = file_get_contents('php://input');
+        $json = json_decode($data, true);
+
+        Transaction::run(function() use ($json) {
+            $project = ProjectDAO::findById($json['projectId']);
+            if ($project === null) {
+                throw new Exception('Pas de projet associe au projectId');
+            }
+            assert($project instanceof Project);
+            
+            $updatedActiveMilestoneIndex = $json['activeMilestoneIndex'];
+            $currentMilestones = MilestoneDAO::findByProjectId($json['projectId']);
+
+            if ($updatedActiveMilestoneIndex >= count($currentMilestones) || $updatedActiveMilestoneIndex < 0) {
+                throw new Exception("Paramètre invalide: la clé ordonnée est out of bounds.");
+            }
+
+            $oldActiveMilestoneIndex = $project->getCurrentMilestoneIndex();
+            if ($updatedActiveMilestoneIndex !== $oldActiveMilestoneIndex + 1) {
+                throw new Exception("Demande d'incrémenter la clé ordonnée pour plus que 1.");
+            }
+
+            ProjectDAO::update($project);
+        });
+
+        // TODO: faire quelque chose avec le resultat de la transaction 
+        if (Transaction::isSuccess()) {
+            // TODO: valeur de retour pour l'operation.
+            return $this->responseJson(200, $json["projectId"]);
+        }
+        return $this->notFoundResponse(); 
+    }
+
+    private function deleteFromRequest() {
+        $data = file_get_contents('php://input');
+        $json = json_decode($data, true);
+
+        Transaction::run(function() use ($json) {
+            $project = ProjectDAO::findById($json['projectId']);
+            if ($project === null) {
+                throw new Exception("Pas de projet associe au projectId");
+            }
+            ProjectDAO::delete($project);
+
+            $milestones = MilestoneDAO::findByProjectId($json["projectId"]);
+            foreach ($milestones as $milestone) {
+                MilestoneDAO::delete($milestone);
             }
         });
-    }
+
+        // TODO: faire quelque chose avec le resultat de la transaction 
+        if (Transaction::isSuccess()) {
+            // TODO: valeur de retour pour l'operation.
+            return $this->responseJson(200, $json["projectId"]);
+        }
+        return $this->notFoundResponse(); 
+    }    
 }
 
 ?>

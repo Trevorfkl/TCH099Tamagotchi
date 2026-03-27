@@ -1,6 +1,29 @@
 <?php
 
 class Validators {
+
+
+    public static function validateOrderKeys(array $firstArray, ?array $secondArray = null, ?callable $getter = null): void
+    {
+        // TODO: redo this, very annoying to use.
+        if ($getter === null) {
+            $getter = fn(int $key) => $key;
+        }
+        $firstArrayKeys = array_map(fn($item) => $getter($item), $firstArray);
+        $secondArrayKeys = [];
+
+        if ($secondArray !== null) {
+            $secondArrayKeys = array_map(fn($item) => $getter($item), $secondArray);
+        }
+        $mergedKeys = [...array_values($firstArrayKeys), ...array_values($secondArrayKeys)];
+        sort($mergedKeys);
+        for ($i = 0; $i < count($mergedKeys); $i++) {
+            if ($mergedKeys[$i] !== $i) {
+                throw new Exception("Sequence de clé d'ordre invalide.");
+            }
+        }
+    }
+
     public static function validatePlant(Plant $plant): void
     {
         if (empty($plant->getName())) {
