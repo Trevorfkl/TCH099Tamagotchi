@@ -2,13 +2,12 @@
 
 class TransactionResult
 {
-    private bool $success;
+    private bool $success = true;
     private array $queryResults;
     private ?string $errorMessage;
 
-    public function __construct(bool $success, array $queryResults, ?string $errorMessage = null)
+    public function __construct(array $queryResults, ?string $errorMessage = null)
     {
-        $this->success = $success;
         $this->queryResults = $queryResults;
         $this->errorMessage = $errorMessage;
     }
@@ -17,12 +16,19 @@ class TransactionResult
 
     public static function emptyResult(): TransactionResult
     {
-        return new TransactionResult(true, [], null);
+        return new TransactionResult([], "Pas de transaction.");
     }
 
     public static function errorResult($errorMessage = null): TransactionResult
     {
-        return new TransactionResult(false, [], ($errorMessage === null) ? "Erreur non specifiee" : $errorMessage);
+        $tr = new TransactionResult([], ($errorMessage === null) ? "Erreur non specifiee" : $errorMessage);
+        $tr->setUnsuccessful();
+        return $tr;
+    }
+
+    public function setUnsuccessful(): void 
+    {
+        $this->success = false;
     }
 
     public function isSuccess(): bool

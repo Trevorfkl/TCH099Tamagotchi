@@ -13,8 +13,9 @@ abstract class BaseDAO
      * @throws Exception
      * @return mixed
      */
-    protected static function withConnexion(?PDO $connexion, callable $fonctionDAO): mixed 
+    private static function withConnexion(?PDO $connexion, callable $fonctionDAO): mixed 
     {
+        // TODO: check if this can be private
         $closeAfter = false;
 
         // Si il n'y a pas de connexion initiale, check si ConnexionContext en contient une.
@@ -32,12 +33,22 @@ abstract class BaseDAO
                 throw new Exception("Impossible d'obtenir la connexion à la BD");
             }
         }
+        // TODO: check if this passes the exception to the higher scope.
         $result = $fonctionDAO($connexion);
 
         if ($closeAfter) {
             ConnexionBD::close();
         }
         return $result;
+    }
+
+    private static function throwsExceptionOnFalse(?PDO $connexion, callable $fonctionDAO): bool
+    {
+        $success = $fonctionDAO($connexion);
+        if (!$success) {
+            throw new Exception("Un probleme est survenu lors d'une operation a la base de donnees.");
+        }
+        return $success;
     }
 
     abstract protected static function createObjectFromEnr(array $enr): object;
@@ -188,9 +199,7 @@ abstract class BaseDAO
      */
     public static function save(object $object, ?PDO $connexion = null): bool
     {
-        return self::withConnexion(
-            $connexion,
-            function(PDO $connexion) use ($object) {
+        $saveFct = function(PDO $connexion) use ($object) {
                 $data = static::mapObjectToRows($object);
                 $colNames = array_keys($data);
                 array_shift($colNames); // id auto-incrementé, on l'enlève des colonnes à insérer
@@ -206,16 +215,18 @@ abstract class BaseDAO
                     $object->setId($connexion->lastInsertId());
                 }
                 return $request->execute();
-            }
+            };
+
+        return self::withConnexion(
+            $connexion,
+            fn() => self::throwsExceptionOnFalse($connexion, $saveFct)
         );
     }
 
 
     public static function saveAll(array $objects, ?PDO $connexion = null): bool
     {
-        return self::withConnexion(
-            $connexion,
-            function(PDO $connexion) use ($objects) {
+        $saveAllFct = function(PDO $connexion) use ($objects) {
                 $data = array_map(function($object) {
                     return static::mapObjectToRows($object);
                 }, $objects);
@@ -234,15 +245,23 @@ abstract class BaseDAO
                     }
                 }
                 return $request->execute();
-            }
+            };
+
+        return self::withConnexion(
+            $connexion,
+            fn() => self::throwsExceptionOnFalse($connexion, $saveAllFct)
         );
     }
 
+    /**
+     * Update le row associé à l'objet. Si succès: la référence passée en argument tiendra un objet crée avec les nouveaux attributs 
+     * @param object $object
+     * @param mixed $connexion
+     * @return bool
+     */
     public static function update(object $object, ?PDO $connexion = null): bool
     {
-        return self::withConnexion(
-            $connexion,
-            function(PDO $connexion) use ($object) {
+        $updateFct = function(PDO $connexion) use ($object) {
                 $data = static::mapObjectToRows($object);
                 $colNames = array_keys($data);
 
@@ -255,16 +274,21 @@ abstract class BaseDAO
                 foreach($data as $key => $value) {
                     HelperPDO::bindAutoParam($request, ":$key", $value);
                 }
-                return $request->execute();
-            }
+                $success = $request->execute();
+                if ($success) {
+                    $object = self::createObjectFromEnr($data);
+                }
+            };
+
+        return self::withConnexion(
+            $connexion,
+            fn() => self::throwsExceptionOnFalse($connexion, $updateFct)
         );
     }
 
     public static function delete(object $object, ?PDO $connexion = null): bool
     {
-        return self::withConnexion(
-            $connexion,
-            function(PDO $connexion) use ($object) {
+        $deleteFct = function(PDO $connexion) use ($object) {
                 $sql = TemplaterSQL::DELETE_FROM(static::TABLE);
                 $whereClause = TemplaterSQL::WHERE_EQUALS(self::ID_COLUMN, ":id");
                 $sql = TemplaterSQL::combine([$sql, $whereClause]);
@@ -273,8 +297,15 @@ abstract class BaseDAO
 
                 $id = $object->getId();
                 $request->bindParam(":id", $id, PDO::PARAM_INT);
-                return $request->execute();
-            }
+                $success = $request->execute();
+                if ($success) {
+                    $object = null;
+                }
+            };
+
+        return self::withConnexion(
+            $connexion,
+            fn() => self::throwsExceptionOnFalse($connexion, $deleteFct)
         );
     }
 

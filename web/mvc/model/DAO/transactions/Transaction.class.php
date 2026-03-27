@@ -3,16 +3,15 @@
 class Transaction
 {
     private array $queries;
-    private static TransactionResult $transactionResult;
+    private static TransactionResult $transactionResult = TransactionResult::emptyResult();
     public function __construct() {
         $this->queries = [];
-        $this->transactionResult = new TransactionResult(false, [], "Aucune transaction effectuee");
     }
 
     /**
+     * DONT USE
      * Prend un array de queries depuis les DAOs et les exécute dans une transaction. 
      * Si une des queries échoue, la transaction est annulée.
-     *
      * @param callable(PDO):mixed[] $queries array de fonctions DAO qui prennent une connexion PDO.
      * @return TransactionResult Un objet contenant le succes d'une transaction, et ces resultats dans un key-value array.
      */
@@ -29,7 +28,7 @@ class Transaction
 
             $connexion->beginTransaction();
 
-            $transactionResult = new TransactionResult(true, [], null);
+            $transactionResult = new TransactionResult([], null);
     
             foreach ($this->queries as $name => $query) {
                 if (!is_callable($query)) {
@@ -44,7 +43,7 @@ class Transaction
 
         } catch (Exception $e) {
             $connexion->rollBack();
-            $this->transactionResult = new TransactionResult(false, [], "Erreur lors de la transaction");
+            $this->transactionResult = TransactionResult::errorResult($e);
 
         } finally {
             ConnexionContext::clear();
@@ -66,6 +65,7 @@ class Transaction
             $transactionResult = $callback($connexion);
             $connexion->commit();
             self::$transactionResult = $transactionResult;
+            
         } catch (Exception $e) {
             self::$transactionResult = TransactionResult::errorResult($e->getMessage());
             $connexion->rollBack();
@@ -90,6 +90,7 @@ class Transaction
     {
         return self::$transactionResult->isSuccess();
     }
+
 
     public function addQuery(string $name, callable $query): void
     {
