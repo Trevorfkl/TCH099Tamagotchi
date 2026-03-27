@@ -16,96 +16,23 @@
             Connecte-toi pour accéder à ton jardin
         </p>
 
-        <form id="loginForm">
+        <form action="mvc/frontController.php?action=seConnecter" method="POST">
             <div class="form-group">
                 <label for="emailInput">Email</label>
-                <input type="email" id="emailInput" placeholder="ton@email.com" required>
+                <input type="email" id="emailInput" name="email" placeholder="ton@email.com" required>
             </div>
 
             <div class="form-group">
                 <label for="passwordInput">Mot de passe</label>
-                <input type="password" id="passwordInput" placeholder="••••••••" required>
+                <input type="password" id="passwordInput" name="mot_passe" placeholder="••••••••" required>
             </div>
-
-            <p id="errorMessage" style="color:red; font-size:14px; margin-top:5px; display:none;"></p>
 
             <div class="btn-container">
                 <button type="submit" class="btn btn-primary">Se connecter</button>
                 <a href="inscription.html" class="btn btn-secondary">S'inscrire</a>
             </div>
         </form>
-
-        <div style="margin-top:25px; font-size:13px; color:#6B9F71; text-align:center;">
-            <p style="margin:5px 0;"><strong>Compte démo :</strong></p>
-            <p style="margin:5px 0;">Email : karim@growchi.com</p>
-            <p style="margin:5px 0;">Mot de passe : 1234</p>
-        </div>
     </div>
 
-    <script>
-        // Crée un compte démo si aucun utilisateur n'existe
-        function initializeDemoUser() {
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-
-            const demoExists = users.some(user => user.email === 'karim@growchi.com');
-
-            if (!demoExists) {
-                users.push({
-                    id: Date.now().toString(),
-                    firstName: 'Karim',
-                    lastName: 'EL-Ayoubi',
-                    email: 'karim@growchi.com',
-                    password: '1234',
-                    phone: '',
-                    bio: 'Étudiant motivé qui veut faire grandir son jardin académique.',
-                    color: '#6B9F71',
-                    coins: 0,
-                    tasks: [
-                        {
-                            id: '1',
-                            name: 'Réviser le cours de TCH099',
-                            completed: false,
-                            date: new Date().toISOString().split('T')[0]
-                        },
-                        {
-                            id: '2',
-                            name: 'Finir la maquette web',
-                            completed: true,
-                            date: new Date().toISOString().split('T')[0]
-                        }
-                    ]
-                });
-
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-        }
-
-        initializeDemoUser();
-
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('emailInput').value.trim().toLowerCase();
-            const password = document.getElementById('passwordInput').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
-
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-
-            const foundUser = users.find(user => 
-                user.email.toLowerCase() === email && user.password === password
-            );
-
-            if (!foundUser) {
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = 'Email ou mot de passe incorrect.';
-                return;
-            }
-
-            localStorage.setItem('currentUser', JSON.stringify(foundUser));
-            localStorage.setItem('userName', foundUser.firstName);
-
-            window.location.href = 'dashboard.html';
-        });
-    </script>
 </body>
 </html>

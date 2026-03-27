@@ -15,34 +15,27 @@
             Rejoins Growchi et commence ton jardin académique
         </p>
 
-        <form id="registerForm">
+        <form action="mvc/frontController.php?action=seInscrire" method="POST">
             <div class="form-row">
                 <div class="form-group">
                     <label for="lastName">Nom</label>
-                    <input type="text" id="lastName" placeholder="Nom" required>
+                    <input type="text" id="lastName" name="lastName" placeholder="Nom" required>
                 </div>
                 <div class="form-group">
                     <label for="firstName">Prénom</label>
-                    <input type="text" id="firstName" placeholder="Prénom" required>
+                    <input type="text" id="firstName" name="firstName" placeholder="Prénom" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="email">Adresse Courriel</label>
-                <input type="email" id="email" placeholder="ton@email.com" required>
+                <input type="email" id="email" name="email" placeholder="ton@email.com" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Mot de passe</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
             </div>
-
-            <div class="form-group">
-                <label for="phone">No de téléphone</label>
-                <input type="tel" id="phone" placeholder="123 456-7890">
-            </div>
-
-            <p id="errorMessage" style="color:red; font-size:14px; margin-top:5px; display:none;"></p>
 
             <div class="btn-container" style="margin-top: 50px;">
                 <button type="submit" class="btn btn-primary">Confirmer</button>
@@ -51,57 +44,6 @@
         </form>
 
     </div>
-
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const lastName = document.getElementById('lastName').value.trim();
-            const firstName = document.getElementById('firstName').value.trim();
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('password').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
-
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-
-            const emailAlreadyUsed = users.some(user => user.email.toLowerCase() === email);
-
-            if (emailAlreadyUsed) {
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = 'Un compte avec cet email existe déjà.';
-                return;
-            }
-
-            const newUser = {
-                id: Date.now().toString(),
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password,
-                phone: phone,
-                bio: '',
-                color: '#6B9F71',
-                coins: 0,
-                tasks: [
-                    {
-                        id: '1',
-                        name: 'Découvrir mon tableau de bord',
-                        completed: false,
-                        date: new Date().toISOString().split('T')[0]
-                    }
-                ]
-            };
-
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
-            localStorage.setItem('userName', newUser.firstName);
-
-            window.location.href = 'dashboard.html';
-        });
-    </script>
 
 </body>
 </html>

@@ -1,52 +1,26 @@
 <?php
-
-// *****************************************************************************************
-// Description   : Contrôleur spécifique pour l'action de création de compte utilisateur
-// *****************************************************************************************
-
-include_once("controleurs/controleur.abstract.class.php");
-include_once("modele/DAO/UserDAO.class.php");
-include_once("modele/Role.class.php");
-include_once("modele/User.class.php");
+include_once(__DIR__ . "/controleur.abstract.class.php");
+include_once(__DIR__ . "/../model/DAO/UserDAO.class.php");
+include_once(__DIR__ . "/../model/Role.class.php");
+include_once(__DIR__ . "/../model/User.class.php");
 
 class SeInscrire extends Controleur
 {
-    // ******************* Attributs
-    private $tabProduits;
-
-    // ******************* Constructeur vide
     public function __construct()
     {
         parent::__construct();
-        $this->tabProduits = array();
     }
 
-    // ******************* Accesseurs
-    public function getTabProduits(): array
-    {
-        return $this->tabProduits;
-    }
-
-    // Méthode pour vérifier si l'utilisateur est admin
-  
-
-    // ******************* Méthode executerAction
-    // TODO: modifier les roles 
     public function executerAction(): string
     {
-        
-        // Vérifiez si le formulaire de création de compte est soumis
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST["firstName"])) {
-            // Déterminer le rôle en fonction des permissions
-            if ($this->isAdmin() && isset($_POST['role'])) {
-                // Si l'utilisateur est admin, utiliser le rôle fourni dans le formulaire
-                $role = new Role((int)$_POST['role'], $_POST['roleName'] ?? "Client");
-            } else {
-                // Sinon, attribuer le rôle "Client" par défaut
-                $role = new Role(3, "Client");
-            }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'
+            && isset($_POST['firstName'])
+            && isset($_POST['lastName'])
+            && isset($_POST['email'])
+            && isset($_POST['password'])) {
 
-            // Création de l'utilisateur
+            $role = new Role(3, "Client");
+
             $nouvelUtilisateur = new User(
                 null,
                 $_POST['firstName'],
@@ -57,22 +31,15 @@ class SeInscrire extends Controleur
                 []
             );
 
-            // Hacher le mot de passe avant l'insertion
             $nouvelUtilisateur->hashPassword();
 
-            // Enregistrer l'utilisateur dans la base de données
             $resultat = UserDAO::save($nouvelUtilisateur);
 
-            // Rediriger en fonction du résultat
             if ($resultat) {
-                header("Location: ?action=seConnecter&message=Compte créé avec succès !");
-                exit;
-            } else {
-                $this->messagesErreur[] = "Impossible de créer le compte.";
+                return "connexion.html";
             }
         }
 
-        // Retourner la vue pour la page de création de compte
-        return "inscription.php";
+        return "inscription.html";
     }
 }
