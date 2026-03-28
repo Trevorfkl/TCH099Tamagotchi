@@ -6,114 +6,36 @@
     <title>Growchi - Mon Jardin</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .calendar-day-name {
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #6B9F71;
-        }
-
-        .calendar-cell {
-            min-height: 72px;
-            background: #F4F9F1;
-            border: 2px solid #C8E2C6;
-            border-radius: 14px;
-            padding: 6px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .calendar-cell:hover {
-            transform: scale(1.02);
-            border-color: #6B9F71;
-        }
-
-        .calendar-cell.selected {
-            border-color: #2C4C3B;
-            background: #EAF4E5;
-        }
-
-        .calendar-cell.empty {
-            background: transparent;
-            border: none;
-            cursor: default;
-        }
-
-        .calendar-day-number {
-            font-size: 13px;
-            font-weight: 600;
-            color: #2C4C3B;
-        }
-
-        .calendar-plant {
-            font-size: 22px;
-            text-align: center;
-            margin-top: 4px;
-        }
-
-        .calendar-label {
-            font-size: 10px;
-            text-align: center;
-            color: #6B9F71;
-            line-height: 1.1;
-            min-height: 22px;
-        }
-
-        .legend-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-            font-size: 12px;
-            color: #2C4C3B;
-        }
-
-        .legend-item {
-            background: #F4F9F1;
-            border: 1px solid #C8E2C6;
-            border-radius: 10px;
-            padding: 6px 10px;
-        }
+        .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+        .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-top:10px; }
+        .calendar-day-name { text-align:center; font-size:12px; font-weight:600; color:#6B9F71; }
+        .calendar-cell { min-height:72px; background:#F4F9F1; border:2px solid #C8E2C6; border-radius:14px; padding:6px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.2s ease,border-color 0.2s ease; }
+        .calendar-cell:hover { transform:scale(1.02); border-color:#6B9F71; }
+        .calendar-cell.selected { border-color:#2C4C3B; background:#EAF4E5; }
+        .calendar-cell.empty { background:transparent; border:none; cursor:default; }
+        .calendar-day-number { font-size:13px; font-weight:600; color:#2C4C3B; }
+        .calendar-plant { font-size:22px; text-align:center; margin-top:4px; }
+        .calendar-label { font-size:10px; text-align:center; color:#6B9F71; line-height:1.1; min-height:22px; }
+        .legend-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; font-size:12px; color:#2C4C3B; }
+        .legend-item { background:#F4F9F1; border:1px solid #C8E2C6; border-radius:10px; padding:6px 10px; }
     </style>
 </head>
 <body>
 
     <div class="app-container dashboard-layout">
 
-        <h1 style="font-size: 24px; margin-top: 0;" id="welcomeText">Bonjour !</h1>
-        <p style="margin-top: -10px; margin-bottom: 20px; color: #6B9F71;">
+        <h1 style="font-size:24px; margin-top:0;" id="welcomeText">Bonjour !</h1>
+        <p style="margin-top:-10px; margin-bottom:20px; color:#6B9F71;">
             Organise ton mois et fais pousser ton jardin académique 🌿
         </p>
 
-        <div class="card-section" style="margin-bottom: 15px;">
+        <div class="card-section" style="margin-bottom:15px;">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                 <div>
                     <h2 style="margin:0; font-size:18px;">Mes récompenses</h2>
-                    <p style="margin:5px 0 0 0; font-size:14px; opacity:0.8;">
-                        Complète tes activités pour gagner des coins
-                    </p>
+                    <p style="margin:5px 0 0 0; font-size:14px; opacity:0.8;">Complète tes activités pour gagner des coins</p>
                 </div>
-                <div id="coinsBox" style="background:#D4E6D1; padding:10px 16px; border-radius:14px; font-weight:600;">
-                    💰 0 coins
-                </div>
+                <div id="coinsBox" style="background:#D4E6D1; padding:10px 16px; border-radius:14px; font-weight:600;">💰 0 coins</div>
             </div>
         </div>
 
@@ -123,10 +45,8 @@
                 <h2 id="calendarTitle" style="margin:0; font-size:18px;">Calendrier</h2>
                 <button class="btn btn-secondary" style="width:auto; padding:10px 14px;" onclick="changeMonth(1)">▶</button>
             </div>
-
             <div class="calendar-grid" id="calendarDaysHeader"></div>
             <div class="calendar-grid" id="calendarGrid"></div>
-
             <div class="legend-row">
                 <div class="legend-item">🌱 Étude</div>
                 <div class="legend-item">🪴 TP / Devoir</div>
@@ -139,30 +59,25 @@
             <div class="garden-status">
                 <div class="garden-icon" id="gardenIcon">🌱</div>
                 <div>
-                    <h2 style="margin: 0; font-size: 18px;" id="gardenText">Jeune pousse</h2>
-                    <p style="margin: 0; font-size: 14px; opacity: 0.8;" id="progressText">0% de croissance</p>
+                    <h2 style="margin:0; font-size:18px;" id="gardenText">Jeune pousse</h2>
+                    <p style="margin:0; font-size:14px; opacity:0.8;" id="progressText">0% de croissance</p>
                 </div>
             </div>
-
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+                <div class="progress-bar-fill" id="progressBar" style="width:0%;"></div>
             </div>
         </div>
 
         <div class="card-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px; flex-wrap:wrap;">
-                <h2 style="margin: 0; font-size: 18px;">Activités du jour sélectionné</h2>
+                <h2 style="margin:0; font-size:18px;">Activités du jour sélectionné</h2>
                 <span id="selectedDateText" style="font-size:13px; color:#6B9F71;"></span>
             </div>
-
             <div id="taskList"></div>
-
-            <p id="emptyMessage" style="display:none; margin-top:10px; color:#88a892;">
-                Aucune activité pour cette journée.
-            </p>
+            <p id="emptyMessage" style="display:none; margin-top:10px; color:#88a892;">Aucune activité pour cette journée.</p>
         </div>
 
-        <div class="btn-container" style="margin-top: 10px;">
+        <div class="btn-container" style="margin-top:10px;">
             <a href="ajout.html" class="btn btn-primary">Ajouter une activité</a>
             <a href="profile.html" class="btn btn-secondary">Voir mon profil</a>
             <button type="button" class="btn btn-secondary" onclick="logout()">Déconnexion</button>
@@ -170,278 +85,181 @@
 
     </div>
 
+    <script src="app.js"></script>
     <script>
-        let currentDate = new Date();
+        if (!requireAuth()) {}
+
+        let currentDate  = new Date();
         let selectedDate = new Date().toISOString().split('T')[0];
+        let allTaches    = [];
 
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-        if (!currentUser) {
-            window.location.href = 'index.html';
-        }
-
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('users')) || [];
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        function getCurrentUserFromStorage() {
-            const users = getUsers();
-            const storedCurrentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-            if (!storedCurrentUser) return null;
-
-            return users.find(user => user.id === storedCurrentUser.id) || null;
-        }
-
-        function saveCurrentUser(updatedUser) {
-            let users = getUsers();
-            users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
-            saveUsers(users);
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-            localStorage.setItem('userName', updatedUser.firstName);
-        }
-
-        function loadHeader() {
-            const user = getCurrentUserFromStorage();
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
+        async function init() {
+            try {
+                const user = getCurrentUser();
+                if (user) {
+                    document.getElementById('welcomeText').textContent = 'Bonjour, ' + user.prenom + ' !';
+                    document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
+                }
+                allTaches = await apiGetTaches();
+                renderCalendar();
+                renderTasks();
+            } catch (err) {
+                console.error(err);
             }
-
-            document.getElementById('welcomeText').textContent = 'Bonjour, ' + user.firstName + ' !';
-            document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
         }
 
         function formatDisplayDate(dateString) {
             const date = new Date(dateString + 'T00:00:00');
-            return date.toLocaleDateString('fr-CA', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+            return date.toLocaleDateString('fr-CA', { year:'numeric', month:'long', day:'numeric' });
         }
 
-        function getTasksForDate(user, dateString) {
-            return (user.tasks || []).filter(task => task.date === dateString);
+        function getTachesForDate(dateString) {
+            return allTaches.filter(t => t.date === dateString);
         }
 
-        function getPlantForDay(tasks) {
-            if (tasks.length === 0) {
-                return { emoji: '', label: '' };
-            }
-
-            const allCompleted = tasks.every(task => task.completed);
-            if (allCompleted) {
-                return { emoji: '✅', label: 'Complété' };
-            }
-
-            const hasExam = tasks.some(task => task.type === 'examen');
-            const hasTP = tasks.some(task => task.type === 'tp' || task.type === 'devoir');
-            const hasStudy = tasks.some(task => task.type === 'etude');
-
-            if (hasExam) return { emoji: '🌸', label: 'Examen' };
-            if (hasTP) return { emoji: '🪴', label: 'TP / Devoir' };
-            if (hasStudy) return { emoji: '🌱', label: 'Étude' };
-
-            return { emoji: '🌱', label: 'Activité' };
+        function getPlantForDay(taches) {
+            if (taches.length === 0) return { emoji:'', label:'' };
+            if (taches.every(t => t.completee)) return { emoji:'✅', label:'Complété' };
+            if (taches.some(t => t.type === 'examen')) return { emoji:'🌸', label:'Examen' };
+            if (taches.some(t => t.type === 'tp' || t.type === 'devoir')) return { emoji:'🪴', label:'TP / Devoir' };
+            return { emoji:'🌱', label:'Étude' };
         }
 
         function renderCalendar() {
             const daysHeader = document.getElementById('calendarDaysHeader');
-            const grid = document.getElementById('calendarGrid');
-            const title = document.getElementById('calendarTitle');
-            const user = getCurrentUserFromStorage();
-
-            if (!user) return;
+            const grid       = document.getElementById('calendarGrid');
+            const title      = document.getElementById('calendarTitle');
 
             daysHeader.innerHTML = '';
             grid.innerHTML = '';
 
-            const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-            dayNames.forEach(day => {
-                const headerCell = document.createElement('div');
-                headerCell.className = 'calendar-day-name';
-                headerCell.textContent = day;
-                daysHeader.appendChild(headerCell);
+            ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(day => {
+                const h = document.createElement('div');
+                h.className = 'calendar-day-name';
+                h.textContent = day;
+                daysHeader.appendChild(h);
             });
 
-            const year = currentDate.getFullYear();
+            const year  = currentDate.getFullYear();
             const month = currentDate.getMonth();
-
-            title.textContent = currentDate.toLocaleDateString('fr-CA', {
-                month: 'long',
-                year: 'numeric'
-            });
+            title.textContent = currentDate.toLocaleDateString('fr-CA', { month:'long', year:'numeric' });
 
             const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
+            const lastDay  = new Date(year, month + 1, 0);
+            let offset = firstDay.getDay();
+            offset = offset === 0 ? 6 : offset - 1;
 
-            let startOffset = firstDay.getDay();
-            startOffset = startOffset === 0 ? 6 : startOffset - 1;
-
-            for (let i = 0; i < startOffset; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-cell empty';
-                grid.appendChild(emptyCell);
+            for (let i = 0; i < offset; i++) {
+                const e = document.createElement('div');
+                e.className = 'calendar-cell empty';
+                grid.appendChild(e);
             }
 
             for (let day = 1; day <= lastDay.getDate(); day++) {
-                const cellDate = new Date(year, month, day);
-                const dateString = cellDate.toISOString().split('T')[0];
-                const tasks = getTasksForDate(user, dateString);
-                const plant = getPlantForDay(tasks);
+                const dateStr = new Date(year, month, day).toISOString().split('T')[0];
+                const taches  = getTachesForDate(dateStr);
+                const plant   = getPlantForDay(taches);
 
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell';
-
-                if (dateString === selectedDate) {
-                    cell.classList.add('selected');
-                }
-
-                cell.onclick = () => {
-                    selectedDate = dateString;
-                    renderCalendar();
-                    renderTasks();
-                };
-
+                cell.className = 'calendar-cell' + (dateStr === selectedDate ? ' selected' : '');
+                cell.onclick = () => { selectedDate = dateStr; renderCalendar(); renderTasks(); };
                 cell.innerHTML = `
                     <div class="calendar-day-number">${day}</div>
                     <div class="calendar-plant">${plant.emoji}</div>
                     <div class="calendar-label">${plant.label}</div>
                 `;
-
                 grid.appendChild(cell);
             }
         }
 
         function renderTasks() {
-            const user = getCurrentUserFromStorage();
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            const tasks = getTasksForDate(user, selectedDate);
-            const listDiv = document.getElementById('taskList');
-            const emptyMessage = document.getElementById('emptyMessage');
+            const taches   = getTachesForDate(selectedDate);
+            const listDiv  = document.getElementById('taskList');
+            const emptyMsg = document.getElementById('emptyMessage');
 
             document.getElementById('selectedDateText').textContent = formatDisplayDate(selectedDate);
-
             listDiv.innerHTML = '';
-            let completedCount = 0;
+            emptyMsg.style.display = taches.length === 0 ? 'block' : 'none';
 
-            if (tasks.length === 0) {
-                emptyMessage.style.display = 'block';
-            } else {
-                emptyMessage.style.display = 'none';
-            }
+            taches.forEach(task => {
+                const checkSymbol = task.completee ? '✓' : '';
+                const checkClass  = task.completee ? 'checkbox checked' : 'checkbox';
+                const textClass   = task.completee ? 'task-text completed' : 'task-text';
+                const typeLabel   = { etude:'Étude', examen:'Examen', tp:'TP', devoir:'Devoir' }[task.type] || 'Activité';
 
-            tasks.forEach(task => {
-                if (task.completed) completedCount++;
-
-                const taskDiv = document.createElement('div');
-                taskDiv.className = 'task-item';
-                taskDiv.style.alignItems = 'flex-start';
-
-                const checkSymbol = task.completed ? '✓' : '';
-                const checkClass = task.completed ? 'checkbox checked' : 'checkbox';
-                const textClass = task.completed ? 'task-text completed' : 'task-text';
-
-                const typeLabel =
-                    task.type === 'etude' ? 'Étude' :
-                    task.type === 'examen' ? 'Examen' :
-                    task.type === 'tp' ? 'TP' :
-                    task.type === 'devoir' ? 'Devoir' :
-                    'Activité';
-
-                taskDiv.innerHTML = `
-                    <div class="${checkClass}" onclick="toggleTask('${task.id}')" style="cursor:pointer;">${checkSymbol}</div>
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.style.alignItems = 'flex-start';
+                div.innerHTML = `
+                    <div class="${checkClass}" onclick="toggleTask(${task.id})" style="cursor:pointer;">${checkSymbol}</div>
                     <div style="flex:1;">
-                        <div class="${textClass}" style="font-weight:500;">${task.name}</div>
-                        <div style="font-size:12px; color:#88a892; margin-top:4px;">
-                            ${typeLabel} • ${task.date}
-                        </div>
+                        <div class="${textClass}" style="font-weight:500;">${task.nom}</div>
+                        <div style="font-size:12px; color:#88a892; margin-top:4px;">${typeLabel} • ${task.date}</div>
                         <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                            <button type="button" onclick="goToEditTask('${task.id}')" style="border:none; background:#D4E6D1; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">
-                                Modifier
-                            </button>
-                            <button type="button" onclick="deleteTask('${task.id}')" style="border:none; background:#f3d7d7; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">
-                                Supprimer
-                            </button>
+                            <button onclick="goToEdit(${task.id})" style="border:none; background:#D4E6D1; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">Modifier</button>
+                            <button onclick="deleteTache(${task.id})" style="border:none; background:#f3d7d7; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:inherit;">Supprimer</button>
                         </div>
                     </div>
                 `;
-
-                listDiv.appendChild(taskDiv);
+                listDiv.appendChild(div);
             });
 
-            updateGlobalGarden(user);
-            loadHeader();
+            updateGarden();
         }
 
-        function updateGlobalGarden(user) {
-            const tasks = user.tasks || [];
-            const total = tasks.length;
-            const completed = tasks.filter(task => task.completed).length;
-            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+        function updateGarden() {
+            const total     = allTaches.length;
+            const completed = allTaches.filter(t => t.completee).length;
+            const progress  = total > 0 ? Math.round((completed / total) * 100) : 0;
 
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('progressText').textContent = progress + '% de croissance';
 
-            const iconEl = document.getElementById('gardenIcon');
-            const textEl = document.getElementById('gardenText');
-
             if (progress === 100 && total > 0) {
-                iconEl.textContent = '🌸';
-                textEl.textContent = 'Jardin en fleurs';
+                document.getElementById('gardenIcon').textContent = '🌸';
+                document.getElementById('gardenText').textContent = 'Jardin en fleurs';
             } else if (progress >= 50) {
-                iconEl.textContent = '🪴';
-                textEl.textContent = 'Jardin en croissance';
+                document.getElementById('gardenIcon').textContent = '🪴';
+                document.getElementById('gardenText').textContent = 'Jardin en croissance';
             } else {
-                iconEl.textContent = '🌱';
-                textEl.textContent = 'Jeune jardin';
+                document.getElementById('gardenIcon').textContent = '🌱';
+                document.getElementById('gardenText').textContent = 'Jeune jardin';
             }
         }
 
-        function toggleTask(taskId) {
-            const user = getCurrentUserFromStorage();
-            if (!user) return;
-
-            user.tasks = (user.tasks || []).map(task => {
-                if (task.id === taskId) {
-                    const wasCompleted = task.completed;
-                    const updatedTask = { ...task, completed: !task.completed };
-
-                    if (!wasCompleted && updatedTask.completed) {
-                        user.coins = (user.coins || 0) + 10;
+        async function toggleTask(id) {
+            try {
+                const result = await apiCompleterTache(id);
+                allTaches = allTaches.map(t => t.id === id ? { ...t, completee: result.completee } : t);
+                if (result.coins !== null) {
+                    const user = getCurrentUser();
+                    if (user) {
+                        user.coins = result.coins;
+                        setCurrentUser(user);
+                        document.getElementById('coinsBox').textContent = '💰 ' + result.coins + ' coins';
                     }
-
-                    return updatedTask;
                 }
-                return task;
-            });
-
-            saveCurrentUser(user);
-            renderCalendar();
-            renderTasks();
+                renderCalendar();
+                renderTasks();
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            }
         }
 
-        function deleteTask(taskId) {
-            const user = getCurrentUserFromStorage();
-            if (!user) return;
-
-            user.tasks = (user.tasks || []).filter(task => task.id !== taskId);
-            saveCurrentUser(user);
-            renderCalendar();
-            renderTasks();
+        async function deleteTache(id) {
+            if (!confirm('Supprimer cette activité ?')) return;
+            try {
+                await apiSupprimerTache(id);
+                allTaches = allTaches.filter(t => t.id !== id);
+                renderCalendar();
+                renderTasks();
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            }
         }
 
-        function goToEditTask(taskId) {
-            localStorage.setItem('editTaskId', taskId);
+        function goToEdit(id) {
+            sessionStorage.setItem('editTaskId', id);
             window.location.href = 'modifier.html';
         }
 
@@ -450,15 +268,8 @@
             renderCalendar();
         }
 
-        function logout() {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('userName');
-            window.location.href = 'index.html';
-        }
-
-        loadHeader();
-        renderCalendar();
-        renderTasks();
+        init();
     </script>
+
 </body>
 </html>

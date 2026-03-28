@@ -6,113 +6,14 @@
     <title>Growchi - Profil</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 25px;
-        }
-
-        .profile-avatar {
-            width: 85px;
-            height: 85px;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 38px;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 8px 20px rgba(44, 76, 59, 0.15);
-            flex-shrink: 0;
-        }
-
-        .profile-subtitle {
-            margin: 6px 0 0 0;
-            color: #6B9F71;
-            font-size: 14px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-top: 10px;
-        }
-
-        .stat-card {
-            background-color: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 18px;
-            padding: 18px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--text-main);
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #6B9F71;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 110px;
-            padding: 12px 15px;
-            border: 2px solid var(--input-border);
-            border-radius: 12px;
-            background-color: var(--input-bg);
-            font-family: 'Fredoka', sans-serif;
-            font-size: 15px;
-            color: var(--text-main);
-            box-sizing: border-box;
-            outline: none;
-            resize: vertical;
-            transition: border-color 0.3s ease;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-        }
-
-        .color-options {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .color-choice {
-            height: 50px;
-            border-radius: 14px;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .color-choice:hover {
-            transform: scale(1.04);
-        }
-
-        .color-choice.selected {
-            border-color: #2C4C3B;
-        }
-
-        .info-line {
-            margin: 8px 0;
-            font-size: 15px;
-        }
-
-        .small-note {
-            font-size: 13px;
-            color: #6B9F71;
-            margin-top: 8px;
-        }
+        .profile-header { display:flex; align-items:center; gap:18px; margin-bottom:25px; }
+        .profile-avatar { width:85px; height:85px; border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:38px; color:white; font-weight:bold; box-shadow:0 8px 20px rgba(44,76,59,0.15); flex-shrink:0; }
+        .profile-subtitle { margin:6px 0 0 0; color:#6B9F71; font-size:14px; }
+        .info-line { margin:8px 0; font-size:15px; }
+        .color-options { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:10px; }
+        .color-choice { height:50px; border-radius:14px; border:3px solid transparent; cursor:pointer; transition:transform 0.2s ease,border-color 0.2s ease; }
+        .color-choice:hover { transform:scale(1.04); }
+        .color-choice.selected { border-color:#2C4C3B; }
     </style>
 </head>
 <body>
@@ -120,15 +21,15 @@
     <div class="app-container dashboard-layout">
 
         <div class="profile-header">
-            <div class="profile-avatar" id="profileAvatar">K</div>
+            <div class="profile-avatar" id="profileAvatar">?</div>
             <div>
-                <h1 style="margin: 0; font-size: 28px;" id="profileFullName">Mon profil</h1>
-                <p class="profile-subtitle">Personnalise ton identité et suis ta progression académique 🌿</p>
+                <h1 style="margin:0; font-size:28px;" id="profileFullName">Mon profil</h1>
+                <p class="profile-subtitle">Personnalise ton identité et suis ta progression 🌿</p>
             </div>
         </div>
 
         <div class="card-section">
-            <h2 style="margin: 0 0 15px 0; font-size: 20px;">Informations du compte</h2>
+            <h2 style="margin:0 0 15px 0; font-size:20px;">Informations du compte</h2>
             <div class="info-line"><strong>Prénom :</strong> <span id="displayFirstName">-</span></div>
             <div class="info-line"><strong>Nom :</strong> <span id="displayLastName">-</span></div>
             <div class="info-line"><strong>Courriel :</strong> <span id="displayEmail">-</span></div>
@@ -136,187 +37,145 @@
         </div>
 
         <div class="card-section">
-            <h2 style="margin: 0 0 15px 0; font-size: 20px;">Mes statistiques</h2>
+            <h2 style="margin:0 0 15px 0; font-size:20px;">Mes statistiques</h2>
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="statCoins">0</div>
-                    <div class="stat-label">Coins gagnés</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statTasks">0</div>
-                    <div class="stat-label">Activités totales</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statCompleted">0</div>
-                    <div class="stat-label">Activités complétées</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="statProgress">0%</div>
-                    <div class="stat-label">Progression globale</div>
-                </div>
+                <div class="stat-card"><div class="stat-number" id="statCoins">0</div><div class="stat-label">Coins gagnés</div></div>
+                <div class="stat-card"><div class="stat-number" id="statTasks">0</div><div class="stat-label">Activités totales</div></div>
+                <div class="stat-card"><div class="stat-number" id="statCompleted">0</div><div class="stat-label">Activités complétées</div></div>
+                <div class="stat-card"><div class="stat-number" id="statProgress">0%</div><div class="stat-label">Progression globale</div></div>
             </div>
         </div>
 
         <div class="card-section">
-            <h2 style="margin: 0 0 15px 0; font-size: 20px;">Personnalisation du profil</h2>
+            <h2 style="margin:0 0 15px 0; font-size:20px;">Personnalisation du profil</h2>
 
-            <form id="profileForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">Prénom</label>
-                        <input type="text" id="firstName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="lastName">Nom</label>
-                        <input type="text" id="lastName" required>
-                    </div>
-                </div>
-
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="phone">No de téléphone</label>
-                    <input type="tel" id="phone" placeholder="123 456-7890">
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" required>
                 </div>
-
                 <div class="form-group">
-                    <label for="bio">Biographie</label>
-                    <textarea id="bio" placeholder="Ex : Étudiant motivé qui veut réussir sa session et faire grandir son jardin académique."></textarea>
-                    <p class="small-note">Ajoute une petite description pour personnaliser ton profil.</p>
+                    <label for="lastName">Nom</label>
+                    <input type="text" id="lastName" required>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Couleur de profil</label>
-                    <div class="color-options">
-                        <div class="color-choice" data-color="#6B9F71" style="background:#6B9F71;"></div>
-                        <div class="color-choice" data-color="#4F7CAC" style="background:#4F7CAC;"></div>
-                        <div class="color-choice" data-color="#B07BAC" style="background:#B07BAC;"></div>
-                        <div class="color-choice" data-color="#D98E73" style="background:#D98E73;"></div>
-                    </div>
+            <div class="form-group">
+                <label for="phone">No de téléphone</label>
+                <input type="tel" id="phone" placeholder="123 456-7890">
+            </div>
+
+            <div class="form-group">
+                <label for="bio">Biographie</label>
+                <textarea id="bio" placeholder="Ex : Étudiant motivé qui veut réussir sa session."></textarea>
+                <p class="small-note">Ajoute une petite description pour personnaliser ton profil.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Couleur de profil</label>
+                <div class="color-options">
+                    <div class="color-choice" data-color="#6B9F71" style="background:#6B9F71;"></div>
+                    <div class="color-choice" data-color="#4F7CAC" style="background:#4F7CAC;"></div>
+                    <div class="color-choice" data-color="#B07BAC" style="background:#B07BAC;"></div>
+                    <div class="color-choice" data-color="#D98E73" style="background:#D98E73;"></div>
                 </div>
+            </div>
 
-                <p id="saveMessage" style="display:none; color:#6B9F71; font-size:14px; margin-top:10px;">
-                    Profil sauvegardé avec succès.
-                </p>
+            <p id="saveMessage" style="display:none; color:#6B9F71; font-size:14px; margin-top:10px;">
+                ✅ Profil sauvegardé avec succès.
+            </p>
+            <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:10px;"></p>
 
-                <div class="btn-container" style="margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                    <a href="dashboard.html" class="btn btn-secondary">Retour au tableau de bord</a>
-                </div>
-            </form>
+            <div class="btn-container" style="margin-top:30px;">
+                <button type="button" id="btnSave" class="btn btn-primary">Enregistrer les modifications</button>
+                <a href="dashboard.html" class="btn btn-secondary">Retour au tableau de bord</a>
+            </div>
         </div>
 
     </div>
 
+    <script src="app.js"></script>
     <script>
+        if (!requireAuth()) {}
+
         let selectedColor = '#6B9F71';
 
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('users')) || [];
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        function getCurrentUser() {
-            const users = getUsers();
-            const storedCurrentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-            if (!storedCurrentUser) return null;
-
-            return users.find(user => user.id === storedCurrentUser.id) || null;
-        }
-
-        function saveCurrentUser(updatedUser) {
-            let users = getUsers();
-            users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
-            saveUsers(users);
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-            localStorage.setItem('userName', updatedUser.firstName);
-        }
-
         function updateColorSelection(color) {
-            document.querySelectorAll('.color-choice').forEach(choice => {
-                choice.classList.remove('selected');
-                if (choice.dataset.color === color) {
-                    choice.classList.add('selected');
-                }
+            document.querySelectorAll('.color-choice').forEach(c => {
+                c.classList.toggle('selected', c.dataset.color === color);
             });
         }
 
-        function loadProfile() {
-            const user = getCurrentUser();
-
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            const firstName = user.firstName || '';
-            const lastName = user.lastName || '';
-            const email = user.email || '';
-            const phone = user.phone || '';
-            const bio = user.bio || '';
-            const color = user.color || '#6B9F71';
-            const tasks = user.tasks || [];
-            const completedTasks = tasks.filter(task => task.completed).length;
-            const progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
-
-            selectedColor = color;
-
-            document.getElementById('profileFullName').textContent = firstName + ' ' + lastName;
-            document.getElementById('displayFirstName').textContent = firstName || '-';
-            document.getElementById('displayLastName').textContent = lastName || '-';
-            document.getElementById('displayEmail').textContent = email || '-';
-            document.getElementById('displayPhone').textContent = phone || '-';
-
-            document.getElementById('firstName').value = firstName;
-            document.getElementById('lastName').value = lastName;
-            document.getElementById('phone').value = phone;
-            document.getElementById('bio').value = bio;
-
-            document.getElementById('statCoins').textContent = user.coins || 0;
-            document.getElementById('statTasks').textContent = tasks.length;
-            document.getElementById('statCompleted').textContent = completedTasks;
-            document.getElementById('statProgress').textContent = progress + '%';
-
-            const avatar = document.getElementById('profileAvatar');
-            avatar.style.background = color;
-            avatar.textContent = firstName ? firstName.charAt(0).toUpperCase() : 'U';
-
-            updateColorSelection(color);
-        }
-
-        document.querySelectorAll('.color-choice').forEach(choice => {
-            choice.addEventListener('click', function() {
+        document.querySelectorAll('.color-choice').forEach(c => {
+            c.addEventListener('click', function () {
                 selectedColor = this.dataset.color;
                 updateColorSelection(selectedColor);
+                document.getElementById('profileAvatar').style.background = selectedColor;
             });
         });
 
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        async function loadProfile() {
+            try {
+                const data = await apiGetProfil();
 
-            const user = getCurrentUser();
-            if (!user) {
-                window.location.href = 'index.html';
+                document.getElementById('profileFullName').textContent  = data.prenom + ' ' + data.nom;
+                document.getElementById('displayFirstName').textContent  = data.prenom || '-';
+                document.getElementById('displayLastName').textContent   = data.nom    || '-';
+                document.getElementById('displayEmail').textContent      = data.email  || '-';
+                document.getElementById('displayPhone').textContent      = data.telephone || '-';
+
+                document.getElementById('firstName').value = data.prenom    || '';
+                document.getElementById('lastName').value  = data.nom       || '';
+                document.getElementById('phone').value     = data.telephone || '';
+                document.getElementById('bio').value       = data.bio       || '';
+
+                document.getElementById('statCoins').textContent     = data.coins;
+                document.getElementById('statTasks').textContent     = data.stats.total;
+                document.getElementById('statCompleted').textContent = data.stats.completees;
+                document.getElementById('statProgress').textContent  = data.stats.progression + '%';
+
+                selectedColor = data.couleur || '#6B9F71';
+                const avatar = document.getElementById('profileAvatar');
+                avatar.style.background = selectedColor;
+                avatar.textContent = data.prenom ? data.prenom.charAt(0).toUpperCase() : '?';
+                updateColorSelection(selectedColor);
+
+                setCurrentUser({ ...getCurrentUser(), ...data });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.getElementById('btnSave').addEventListener('click', async function () {
+            const prenom    = document.getElementById('firstName').value.trim();
+            const nom       = document.getElementById('lastName').value.trim();
+            const telephone = document.getElementById('phone').value.trim();
+            const bio       = document.getElementById('bio').value.trim();
+            const errorMsg  = document.getElementById('errorMessage');
+            const saveMsg   = document.getElementById('saveMessage');
+
+            if (!prenom || !nom) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Prénom et nom sont obligatoires.';
                 return;
             }
 
-            user.firstName = document.getElementById('firstName').value.trim();
-            user.lastName = document.getElementById('lastName').value.trim();
-            user.phone = document.getElementById('phone').value.trim();
-            user.bio = document.getElementById('bio').value.trim();
-            user.color = selectedColor;
+            this.textContent = 'Enregistrement...';
+            this.disabled = true;
+            errorMsg.style.display = 'none';
 
-            saveCurrentUser(user);
-            loadProfile();
-
-            const saveMessage = document.getElementById('saveMessage');
-            saveMessage.style.display = 'block';
-
-            setTimeout(() => {
-                saveMessage.style.display = 'none';
-            }, 2000);
+            try {
+                await apiUpdateProfil(prenom, nom, telephone, bio, selectedColor);
+                await loadProfile();
+                saveMsg.style.display = 'block';
+                setTimeout(() => saveMsg.style.display = 'none', 2500);
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = err.message;
+            } finally {
+                this.textContent = 'Enregistrer les modifications';
+                this.disabled = false;
+            }
         });
 
         loadProfile();

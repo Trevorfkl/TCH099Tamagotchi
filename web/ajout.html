@@ -5,41 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growchi - Ajouter une activité</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--input-border);
-            border-radius: 12px;
-            background-color: var(--input-bg);
-            font-family: 'Fredoka', sans-serif;
-            font-size: 15px;
-            color: var(--text-main);
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        select:focus {
-            border-color: var(--primary);
-        }
-
-        .helper-box {
-            background-color: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 22px;
-            font-size: 14px;
-            color: var(--text-main);
-        }
-
-        .type-preview {
-            margin-top: 8px;
-            font-size: 14px;
-            color: #6B9F71;
-        }
-    </style>
 </head>
 <body>
 
@@ -47,120 +12,75 @@
 
         <h1 style="margin-top:0; margin-bottom:10px;">Ajouter une activité 🌱</h1>
         <p style="margin-top:0; margin-bottom:24px; color:#6B9F71;">
-            Planifie une journée d’étude, un TP, un devoir ou un examen dans ton calendrier.
+            Planifie une journée d'étude, un TP, un devoir ou un examen dans ton calendrier.
         </p>
 
         <div class="helper-box">
             Cette activité sera ajoutée à ton calendrier académique et représentée par une plante selon son type.
-            <div class="type-preview">
-                🌱 Étude &nbsp; | &nbsp; 🪴 TP / Devoir &nbsp; | &nbsp; 🌸 Examen
-            </div>
+            <div class="small-note">🌱 Étude &nbsp;|&nbsp; 🪴 TP / Devoir &nbsp;|&nbsp; 🌸 Examen</div>
         </div>
 
-        <form id="formActivite">
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" required>
+        </div>
 
-            <div class="form-group">
-                <label for="date">Date</label>
-                <input type="date" id="date" required>
-            </div>
+        <div class="form-group">
+            <label for="type">Type d'activité</label>
+            <select id="type" required>
+                <option value="">Choisir...</option>
+                <option value="etude">🌱 Étude</option>
+                <option value="tp">🪴 TP</option>
+                <option value="devoir">🪴 Devoir</option>
+                <option value="examen">🌸 Examen</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label for="type">Type d'activité</label>
-                <select id="type" required>
-                    <option value="">Choisir...</option>
-                    <option value="etude">🌱 Étude</option>
-                    <option value="tp">🪴 TP</option>
-                    <option value="devoir">🪴 Devoir</option>
-                    <option value="examen">🌸 Examen</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" id="description" placeholder="Ex : Étudier le chapitre 3 de TCH099" required>
+        </div>
 
-            <div class="form-group">
-                <label for="description">Description</label>
-                <input type="text" id="description" placeholder="Ex : Étudier le chapitre 3 de TCH099" required>
-            </div>
+        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
 
-            <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
-
-            <div class="btn-container" style="margin-top: 30px;">
-                <button type="submit" class="btn btn-primary">Ajouter l’activité</button>
-                <a href="dashboard.html" class="btn btn-secondary">Retour</a>
-            </div>
-
-        </form>
+        <div class="btn-container" style="margin-top:30px;">
+            <button type="button" id="btnAjouter" class="btn btn-primary">Ajouter l'activité</button>
+            <a href="dashboard.html" class="btn btn-secondary">Retour</a>
+        </div>
 
     </div>
 
+    <script src="app.js"></script>
     <script>
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('users')) || [];
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        function getCurrentUser() {
-            const users = getUsers();
-            const storedCurrentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-            if (!storedCurrentUser) return null;
-
-            return users.find(user => user.id === storedCurrentUser.id) || null;
-        }
-
-        function saveCurrentUser(updatedUser) {
-            let users = getUsers();
-            users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
-            saveUsers(users);
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-            localStorage.setItem('userName', updatedUser.firstName);
-        }
-
-        const currentUser = getCurrentUser();
-        if (!currentUser) {
-            window.location.href = 'index.html';
-        }
+        if (!requireAuth()) {}
 
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
 
-        document.getElementById('formActivite').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const date = document.getElementById('date').value;
-            const type = document.getElementById('type').value;
+        document.getElementById('btnAjouter').addEventListener('click', async function () {
+            const date        = document.getElementById('date').value;
+            const type        = document.getElementById('type').value;
             const description = document.getElementById('description').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
-
-            const user = getCurrentUser();
-
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+            const errorMsg    = document.getElementById('errorMessage');
 
             if (!date || !type || !description) {
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = 'Tous les champs sont obligatoires.';
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Tous les champs sont obligatoires.';
                 return;
             }
 
-            if (!user.tasks) {
-                user.tasks = [];
+            this.textContent = 'Ajout en cours...';
+            this.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                await apiCreerTache(description, type, date);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = err.message;
+                this.textContent = "Ajouter l'activité";
+                this.disabled = false;
             }
-
-            const newTask = {
-                id: Date.now().toString(),
-                name: description,
-                type: type,
-                date: date,
-                completed: false
-            };
-
-            user.tasks.push(newTask);
-            saveCurrentUser(user);
-
-            window.location.href = 'dashboard.html';
         });
     </script>
 

@@ -5,35 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growchi - Modifier une activité</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--input-border);
-            border-radius: 12px;
-            background-color: var(--input-bg);
-            font-family: 'Fredoka', sans-serif;
-            font-size: 15px;
-            color: var(--text-main);
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        select:focus {
-            border-color: var(--primary);
-        }
-
-        .helper-box {
-            background-color: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 22px;
-            font-size: 14px;
-            color: var(--text-main);
-        }
-    </style>
 </head>
 <body>
 
@@ -45,123 +16,89 @@
         </p>
 
         <div class="helper-box">
-            Cette page simule la modification d’une activité académique dans le calendrier.
+            Modifie les informations de ton activité académique dans le calendrier.
         </div>
 
-        <form id="editForm">
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" required>
+        </div>
 
-            <div class="form-group">
-                <label for="date">Date</label>
-                <input type="date" id="date" required>
-            </div>
+        <div class="form-group">
+            <label for="type">Type d'activité</label>
+            <select id="type" required>
+                <option value="">Choisir...</option>
+                <option value="etude">🌱 Étude</option>
+                <option value="tp">🪴 TP</option>
+                <option value="devoir">🪴 Devoir</option>
+                <option value="examen">🌸 Examen</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label for="type">Type d'activité</label>
-                <select id="type" required>
-                    <option value="">Choisir...</option>
-                    <option value="etude">🌱 Étude</option>
-                    <option value="tp">🪴 TP</option>
-                    <option value="devoir">🪴 Devoir</option>
-                    <option value="examen">🌸 Examen</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" id="description" placeholder="Ex : Étudier le chapitre 3 de TCH099" required>
+        </div>
 
-            <div class="form-group">
-                <label for="description">Description</label>
-                <input type="text" id="description" placeholder="Ex : Étudier le chapitre 3 de TCH099" required>
-            </div>
+        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
 
-            <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
-
-            <div class="btn-container" style="margin-top: 30px;">
-                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                <a href="dashboard.html" class="btn btn-secondary">Annuler</a>
-            </div>
-
-        </form>
+        <div class="btn-container" style="margin-top:30px;">
+            <button type="button" id="btnModifier" class="btn btn-primary">Enregistrer les modifications</button>
+            <a href="dashboard.html" class="btn btn-secondary">Annuler</a>
+        </div>
 
     </div>
 
+    <script src="app.js"></script>
     <script>
-        function getUsers() {
-            return JSON.parse(localStorage.getItem('users')) || [];
-        }
+        if (!requireAuth()) {}
 
-        function saveUsers(users) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
+        const editTaskId = sessionStorage.getItem('editTaskId');
+        if (!editTaskId) window.location.href = 'dashboard.html';
 
-        function getCurrentUser() {
-            const users = getUsers();
-            const storedCurrentUser = JSON.parse(localStorage.getItem('currentUser'));
+        async function chargerTache() {
+            try {
+                const taches = await apiGetTaches();
+                const tache  = taches.find(t => t.id == editTaskId);
+                if (!tache) { window.location.href = 'dashboard.html'; return; }
 
-            if (!storedCurrentUser) return null;
-
-            return users.find(user => user.id === storedCurrentUser.id) || null;
-        }
-
-        function saveCurrentUser(updatedUser) {
-            let users = getUsers();
-            users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
-            saveUsers(users);
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-            localStorage.setItem('userName', updatedUser.firstName);
-        }
-
-        const currentUser = getCurrentUser();
-        const editTaskId = localStorage.getItem('editTaskId');
-
-        if (!currentUser || !editTaskId) {
-            window.location.href = 'dashboard.html';
-        }
-
-        const taskToEdit = (currentUser.tasks || []).find(task => task.id === editTaskId);
-
-        if (!taskToEdit) {
-            window.location.href = 'dashboard.html';
-        }
-
-        document.getElementById('date').value = taskToEdit.date || '';
-        document.getElementById('type').value = taskToEdit.type || '';
-        document.getElementById('description').value = taskToEdit.name || '';
-
-        document.getElementById('editForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const date = document.getElementById('date').value;
-            const type = document.getElementById('type').value;
-            const description = document.getElementById('description').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
-
-            const user = getCurrentUser();
-
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
+                document.getElementById('date').value        = tache.date;
+                document.getElementById('type').value        = tache.type;
+                document.getElementById('description').value = tache.nom;
+            } catch (err) {
+                window.location.href = 'dashboard.html';
             }
+        }
+
+        document.getElementById('btnModifier').addEventListener('click', async function () {
+            const date        = document.getElementById('date').value;
+            const type        = document.getElementById('type').value;
+            const description = document.getElementById('description').value.trim();
+            const errorMsg    = document.getElementById('errorMessage');
 
             if (!date || !type || !description) {
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = 'Tous les champs sont obligatoires.';
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Tous les champs sont obligatoires.';
                 return;
             }
 
-            user.tasks = (user.tasks || []).map(task => {
-                if (task.id === editTaskId) {
-                    return {
-                        ...task,
-                        name: description,
-                        type: type,
-                        date: date
-                    };
-                }
-                return task;
-            });
+            this.textContent = 'Enregistrement...';
+            this.disabled = true;
+            errorMsg.style.display = 'none';
 
-            saveCurrentUser(user);
-            localStorage.removeItem('editTaskId');
-            window.location.href = 'dashboard.html';
+            try {
+                await apiModifierTache(editTaskId, description, type, date);
+                sessionStorage.removeItem('editTaskId');
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = err.message;
+                this.textContent = 'Enregistrer les modifications';
+                this.disabled = false;
+            }
         });
+
+        chargerTache();
     </script>
 
 </body>

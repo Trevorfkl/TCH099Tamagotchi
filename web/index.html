@@ -16,23 +16,58 @@
             Connecte-toi pour accéder à ton jardin
         </p>
 
-        <form action="mvc/frontController.php?action=seConnecter" method="POST">
-            <div class="form-group">
-                <label for="emailInput">Email</label>
-                <input type="email" id="emailInput" name="email" placeholder="ton@email.com" required>
-            </div>
+        <div class="form-group">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" placeholder="ton@email.com" required>
+        </div>
 
-            <div class="form-group">
-                <label for="passwordInput">Mot de passe</label>
-                <input type="password" id="passwordInput" name="mot_passe" placeholder="••••••••" required>
-            </div>
+        <div class="form-group">
+            <label for="passwordInput">Mot de passe</label>
+            <input type="password" id="passwordInput" placeholder="••••••••" required>
+        </div>
 
-            <div class="btn-container">
-                <button type="submit" class="btn btn-primary">Se connecter</button>
-                <a href="inscription.html" class="btn btn-secondary">S'inscrire</a>
-            </div>
-        </form>
+        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
+
+        <div class="btn-container">
+            <button type="button" id="btnConnexion" class="btn btn-primary">Se connecter</button>
+            <a href="inscription.html" class="btn btn-secondary">S'inscrire</a>
+        </div>
     </div>
+
+    <script src="app.js"></script>
+    <script>
+        if (getToken()) {
+            window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('btnConnexion').addEventListener('click', async function () {
+            const email    = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
+
+            if (!email || !password) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Email et mot de passe requis.';
+                return;
+            }
+
+            this.textContent = 'Connexion...';
+            this.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                const data = await apiConnexion(email, password);
+                setToken(data.token);
+                setCurrentUser(data.utilisateur);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = err.message;
+                this.textContent = 'Se connecter';
+                this.disabled = false;
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -12,38 +12,71 @@
 
         <h1 style="text-align:center; margin-top:0; margin-bottom:10px;">Créer un compte</h1>
         <p style="text-align:center; margin-top:0; margin-bottom:30px; color:#6B9F71;">
-            Rejoins Growchi et commence ton jardin académique
+            Rejoins Growchi et commence ton jardin académique 
         </p>
 
-        <form action="mvc/frontController.php?action=seInscrire" method="POST">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="lastName">Nom</label>
-                    <input type="text" id="lastName" name="lastName" placeholder="Nom" required>
-                </div>
-                <div class="form-group">
-                    <label for="firstName">Prénom</label>
-                    <input type="text" id="firstName" name="firstName" placeholder="Prénom" required>
-                </div>
-            </div>
-
+        <div class="form-row">
             <div class="form-group">
-                <label for="email">Adresse Courriel</label>
-                <input type="email" id="email" name="email" placeholder="ton@email.com" required>
+                <label for="lastName">Nom</label>
+                <input type="text" id="lastName" placeholder="Nom" required>
             </div>
-
             <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" required>
+                <label for="firstName">Prénom</label>
+                <input type="text" id="firstName" placeholder="Prénom" required>
             </div>
+        </div>
 
-            <div class="btn-container" style="margin-top: 50px;">
-                <button type="submit" class="btn btn-primary">Confirmer</button>
-                <a href="index.html" class="btn btn-secondary">Retour</a>
-            </div>
-        </form>
+        <div class="form-group">
+            <label for="email">Adresse Courriel</label>
+            <input type="email" id="email" placeholder="ton@email.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+
+        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
+
+        <div class="btn-container" style="margin-top: 50px;">
+            <button type="button" id="btnInscrire" class="btn btn-primary">Confirmer</button>
+            <a href="index.html" class="btn btn-secondary">Retour</a>
+        </div>
 
     </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.getElementById('btnInscrire').addEventListener('click', async function () {
+            const prenom   = document.getElementById('firstName').value.trim();
+            const nom      = document.getElementById('lastName').value.trim();
+            const email    = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
+
+            if (!prenom || !nom || !email || !password) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Tous les champs sont obligatoires.';
+                return;
+            }
+
+            this.textContent = 'Création...';
+            this.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                const data = await apiInscription(prenom, nom, email, password);
+                setToken(data.token);
+                setCurrentUser(data.utilisateur);
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = err.message;
+                this.textContent = 'Confirmer';
+                this.disabled = false;
+            }
+        });
+    </script>
 
 </body>
 </html>
