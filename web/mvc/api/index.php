@@ -12,65 +12,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
-$uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$uri    = rtrim($uri, '/');
 
-if (preg_match('#(/auth/.+|/taches.*|/profil.*)$#', $uri, $matches)) {
-    $uri = $matches[1];
-} else {
-    $uri = '';
-}
+// Récupérer l'action depuis le paramètre GET
+$action = $_GET['action'] ?? '';
 
-if ($method === 'POST' && $uri === '/auth/inscription') {
+if ($method === 'POST' && $action === 'inscription') {
     require_once __DIR__ . '/controllers/AuthController.php';
     AuthController::inscription();
     exit;
 }
-if ($method === 'POST' && $uri === '/auth/connexion') {
+if ($method === 'POST' && $action === 'connexion') {
     require_once __DIR__ . '/controllers/AuthController.php';
     AuthController::connexion();
     exit;
 }
-if ($uri === '/profil') {
+if ($action === 'profil') {
     verifierToken();
     require_once __DIR__ . '/controllers/ProfilController.php';
     if ($method === 'GET') ProfilController::getProfil();
     if ($method === 'PUT') ProfilController::updateProfil();
     exit;
 }
-if ($method === 'GET' && $uri === '/taches') {
+if ($method === 'GET' && $action === 'taches') {
     verifierToken();
     require_once __DIR__ . '/controllers/TacheController.php';
     TacheController::getTaches();
     exit;
 }
-if ($method === 'POST' && $uri === '/taches') {
+if ($method === 'POST' && $action === 'taches') {
     verifierToken();
     require_once __DIR__ . '/controllers/TacheController.php';
     TacheController::creerTache();
     exit;
 }
-if ($method === 'PUT' && preg_match('#^/taches/(\d+)$#', $uri, $m)) {
+if ($method === 'PUT' && $action === 'tache_modifier') {
     verifierToken();
     require_once __DIR__ . '/controllers/TacheController.php';
-    TacheController::modifierTache((int)$m[1]);
+    TacheController::modifierTache((int)$_GET['id']);
     exit;
 }
-if ($method === 'DELETE' && preg_match('#^/taches/(\d+)$#', $uri, $m)) {
+if ($method === 'DELETE' && $action === 'tache_supprimer') {
     verifierToken();
     require_once __DIR__ . '/controllers/TacheController.php';
-    TacheController::supprimerTache((int)$m[1]);
+    TacheController::supprimerTache((int)$_GET['id']);
     exit;
 }
-if ($method === 'PATCH' && preg_match('#^/taches/(\d+)/completer$#', $uri, $m)) {
+if ($method === 'PATCH' && $action === 'tache_completer') {
     verifierToken();
     require_once __DIR__ . '/controllers/TacheController.php';
-    TacheController::completerTache((int)$m[1]);
+    TacheController::completerTache((int)$_GET['id']);
     exit;
 }
 
 http_response_code(404);
-echo json_encode(['erreur' => 'Route introuvable']);
+echo json_encode(['erreur' => 'Route introuvable', 'action' => $action]);
 
 function verifierToken(): int {
     $headers = getallheaders();
