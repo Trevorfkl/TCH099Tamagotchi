@@ -14,8 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $method = $_SERVER['REQUEST_METHOD'];
 $uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri    = rtrim($uri, '/');
-$$uri = preg_replace('#^.*?/api/index\.php#', '', $uri);
-$uri = preg_replace('#^.*?/api#', '', $uri);
+
+if (preg_match('#(/auth/.+|/taches.*|/profil.*)$#', $uri, $matches)) {
+    $uri = $matches[1];
+} else {
+    $uri = '';
+}
 
 if ($method === 'POST' && $uri === '/auth/inscription') {
     require_once __DIR__ . '/controllers/AuthController.php';
