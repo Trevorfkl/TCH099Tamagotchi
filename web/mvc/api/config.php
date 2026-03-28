@@ -1,8 +1,8 @@
 <?php
-define('DB_HOST', 'mysql.railway.internal');
-define('DB_NAME', 'railway');
-define('DB_USER', 'root');
-define('DB_PASS', 'axfuGSLMCBqyXnDoxGlIFLvHgnkgLGXb');
+define('DB_HOST', 'sql111.infinityfree.com');
+define('DB_NAME', 'if0_41501144_growchi');
+define('DB_USER', 'if0_41501144');
+define('DB_PASS', 'OHC6AXre3dWPq');  
 
 function getDB(): PDO {
     static $pdo = null;

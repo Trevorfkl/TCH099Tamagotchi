@@ -3,8 +3,7 @@
 
 
 
-
-const API_URL = 'https://TON-SERVEUR.com/api';
+const API_URL = 'https://growchi.page.gd/api';
 
 // ---- Token ----
 function getToken() {
