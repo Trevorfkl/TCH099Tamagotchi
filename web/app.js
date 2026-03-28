@@ -2,8 +2,7 @@
 // Growchi - Utilitaire API REST
 
 
-
-const API_URL = 'https://growchi.page.gd/api';
+const API_URL = 'https://growchi.page.gd/api/index.php';
 
 // ---- Token ----
 function getToken() {
