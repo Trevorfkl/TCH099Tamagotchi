@@ -1,4 +1,4 @@
-const API_URL = 'https://growchi.page.gd/api/index.php';
+const API_URL = 'http://localhost/growchi/mvc/api/index.php';
 
 function getToken() { return sessionStorage.getItem('growchi_token'); }
 function setToken(token) { sessionStorage.setItem('growchi_token', token); }
