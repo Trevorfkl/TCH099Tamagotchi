@@ -52,16 +52,14 @@ class TemplaterSQL
      */
     public static function WHERE_IN(string $colName, array $possibleValues): string
     {
-        $placeholders = implode(', ', array_map(function($value) {
-            return ":$value";
-        }, $possibleValues));
+        $placeholders = implode(', ', $possibleValues);
         return "WHERE $colName IN ($placeholders)";
     }
 
     public static function WHERE_LIKE(string $colName, array $possibleValues): string
     {
         $likeClauses = implode(' OR ', array_map(function($value) use ($colName) {
-            return "$colName LIKE :$value";
+            return "$colName LIKE %$value%";
         }, $possibleValues));
 
         // WHERE plantName LIKE :sunflower OR plantName LIKE :rose..

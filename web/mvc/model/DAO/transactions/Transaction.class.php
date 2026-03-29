@@ -64,7 +64,6 @@ class Transaction
         try {
             $transactionResult = $callback($connexion);
             $connexion->commit();
-            self::$transactionResult = $transactionResult;
             
         } catch (Exception $e) {
             self::$transactionResult = TransactionResult::errorResult($e->getMessage());
@@ -79,6 +78,11 @@ class Transaction
     public static function getResult(): TransactionResult
     {
         return self::$transactionResult;
+    }
+
+    public static function addQueryResult(string $name, mixed $result): void 
+    {
+        self::$transactionResult->addQueryResult($name, $result);
     }
 
     public static function clearResult(): void

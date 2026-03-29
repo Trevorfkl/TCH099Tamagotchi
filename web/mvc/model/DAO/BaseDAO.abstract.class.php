@@ -55,11 +55,11 @@ abstract class BaseDAO
 
     abstract protected static function mapObjectToRows(object $object): array;
 
-    public static function findById(?PDO $connexion = null): ?object 
+    public static function findById(int $id, ?PDO $connexion = null): ?object 
     {
         return self::withConnexion(
             $connexion,
-            function(PDO $connexion) {
+            function(PDO $connexion) use ($id) {
                 $object = null;
 
                 $selectStatement = TemplaterSQL::SELECT_ALL(self::TABLE);
@@ -68,7 +68,6 @@ abstract class BaseDAO
 
                 $request = $connexion->prepare($sql);
 
-                $id = self::ID_COLUMN;
                 $request->bindParam(":id", $id, PDO::PARAM_INT);
                 $request->execute();
 
@@ -79,6 +78,17 @@ abstract class BaseDAO
                 return $object;
             }
         );
+    }
+
+    /**
+     * Retourne les rows correspondants aux ids.
+     * @param array $ids
+     * @param mixed $connexion
+     * @return array
+     */
+    public static function findByIds(array $ids, ?PDO $connexion = null): array
+    {
+        return self::findAllByColumn(self::ID_COLUMN, $ids, $connexion);
     }
 
     /**
@@ -111,20 +121,19 @@ abstract class BaseDAO
         return self::withConnexion(
             $connexion,
             function(PDO $connexion) use ($columnName, $values) {
-                $courses = [];
+                $objects = [];
 
                 $selectStatement = TemplaterSQL::SELECT_ALL(self::TABLE);
                 $whereClause = TemplaterSQL::WHERE_IN($columnName, $values);
                 $sql = TemplaterSQL::combine([$selectStatement, $whereClause]);
 
                 $request = $connexion->prepare($sql);
-                $request->bindParam(":parentId", $semesterId, PDO::PARAM_INT);
                 $request->execute();
 
                 foreach($request as $enr) {
-                    $courses[] = self::createObjectFromEnr($enr);
+                    $objects[] = self::createObjectFromEnr($enr);
                 }
-                return $courses;
+                return $objects;
             }
         );
     }
@@ -149,9 +158,7 @@ abstract class BaseDAO
                 $sql = TemplaterSQL::combine([$selectStatement, $whereClause]);
 
                 $request = $connexion->prepare($sql);
-                foreach ($possibleValues as $value) {
-                    HelperPDO::bindAutoParam($request, ":$value", "%$value%");
-                }
+                
                 $request->execute();
 
                 foreach($request as $enr) {

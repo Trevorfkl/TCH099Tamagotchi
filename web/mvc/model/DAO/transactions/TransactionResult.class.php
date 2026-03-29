@@ -46,8 +46,11 @@ class TransactionResult
         return $this->queryResults;
     }
 
-    public function addQueryResult(string $queryName, object $result): void
+    public function addQueryResult(string $queryName, mixed $result): void
     {
+        if (array_key_exists($queryName, $this->queryResults)) {
+            throw new Exception("Clé existe déja dans transaction.");
+        }
         $this->queryResults[$queryName] = $result;
     }
 
