@@ -81,7 +81,7 @@ class Semester implements JsonSerializable, Idable {
     {
         $this->endDate = $endDate;
     }
-    public function setClasses(array $courses): void
+    public function setCourses(array $courses): void
     {
         $this->courses = $courses;
     }

@@ -47,10 +47,7 @@ class RestControllerProject
         return $statusMessages[$code] ?? "Unknown Status";
     }
 
-    private function statusMessageFromTransactionResult(TransactionResult $transactionResult) 
-    {
-
-    }
+    
 
     private function createProjectFromRequest() {
         $data = file_get_contents('php://input');
