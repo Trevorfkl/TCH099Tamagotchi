@@ -1,8 +1,8 @@
 <?php
-define('DB_HOST', 'sql111.infinityfree.com');
-define('DB_NAME', 'if0_41501144_growchi');
-define('DB_USER', 'if0_41501144');
-define('DB_PASS', 'OHC6AXre3dWPq');
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'growchi');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
 function getDB(): PDO {
     static $pdo = null;
@@ -26,4 +26,3 @@ function getDB(): PDO {
     }
     return $pdo;
 }
-
