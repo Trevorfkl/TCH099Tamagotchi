@@ -6,39 +6,58 @@
     <title>Growchi - Connexion</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="season-spring">
 
-    <div class="app-container">
-        <div class="logo-placeholder">🪴</div>
+    <div class="garden-bg"></div>
+    <div class="pixel-tree left"></div>
+    <div class="pixel-tree right"></div>
+    <div class="pixel-tree far-left"></div>
+    <div class="pixel-tree far-right"></div>
 
-        <h1 style="text-align:center; margin-top:0; margin-bottom:10px;">Growchi</h1>
-        <p style="text-align:center; margin-top:0; margin-bottom:30px; color:#6B9F71;">
-            Connecte-toi pour accéder à ton jardin
-        </p>
+    <!-- Fireflies -->
+    <div class="firefly" style="left:15%;top:60%;animation-duration:4s;animation-delay:0s;"></div>
+    <div class="firefly" style="left:75%;top:70%;animation-duration:6s;animation-delay:1s;"></div>
+    <div class="firefly" style="left:45%;top:55%;animation-duration:5s;animation-delay:2s;"></div>
+    <div class="firefly" style="left:85%;top:65%;animation-duration:7s;animation-delay:0.5s;"></div>
 
-        <div class="form-group">
-            <label for="emailInput">Email</label>
-            <input type="email" id="emailInput" placeholder="ton@email.com" required>
-        </div>
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:440px; margin-top:40px;">
 
-        <div class="form-group">
-            <label for="passwordInput">Mot de passe</label>
-            <input type="password" id="passwordInput" placeholder="••••••••" required>
-        </div>
+            <div class="logo-placeholder">🪴</div>
 
-        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
+            <h1 style="text-align:center; margin-bottom:8px;">Growchi</h1>
+            <p style="text-align:center; margin-bottom:28px; color:#5a8a6a; font-size:14px; font-weight:600;">
+                Connecte-toi à ton jardin académique 🌿
+            </p>
 
-        <div class="btn-container">
-            <button type="button" id="btnConnexion" class="btn btn-primary">Se connecter</button>
-            <a href="inscription.html" class="btn btn-secondary">S'inscrire</a>
+            <div class="form-group">
+                <label for="emailInput">📧 Email</label>
+                <input type="email" id="emailInput" placeholder="ton@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="passwordInput">🔒 Mot de passe</label>
+                <input type="password" id="passwordInput" placeholder="••••••••" required>
+            </div>
+
+            <p id="errorMessage" class="error-msg" style="display:none;"></p>
+
+            <div class="btn-container">
+                <button type="button" id="btnConnexion" class="btn btn-primary">🌱 Se connecter</button>
+                <a href="inscription.html" class="btn btn-secondary">✨ S'inscrire</a>
+            </div>
+
         </div>
     </div>
 
     <script src="app.js"></script>
     <script>
-        if (getToken()) {
-            window.location.href = 'dashboard.html';
-        }
+        // Saison selon le mois
+        const month = new Date().getMonth();
+        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
+        document.body.className = 'season-' + seasons[month];
+
+        if (getToken()) window.location.href = 'dashboard.html';
 
         document.getElementById('btnConnexion').addEventListener('click', async function () {
             const email    = document.getElementById('emailInput').value.trim();
@@ -51,7 +70,7 @@
                 return;
             }
 
-            this.textContent = 'Connexion...';
+            this.textContent = '🌱 Connexion...';
             this.disabled = true;
             errorMsg.style.display = 'none';
 
@@ -63,7 +82,7 @@
             } catch (err) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = err.message;
-                this.textContent = 'Se connecter';
+                this.textContent = '🌱 Se connecter';
                 this.disabled = false;
             }
         });

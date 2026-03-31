@@ -5,100 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growchi - Profil</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .profile-header { display:flex; align-items:center; gap:18px; margin-bottom:25px; }
-        .profile-avatar { width:85px; height:85px; border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:38px; color:white; font-weight:bold; box-shadow:0 8px 20px rgba(44,76,59,0.15); flex-shrink:0; }
-        .profile-subtitle { margin:6px 0 0 0; color:#6B9F71; font-size:14px; }
-        .info-line { margin:8px 0; font-size:15px; }
-        .color-options { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:10px; }
-        .color-choice { height:50px; border-radius:14px; border:3px solid transparent; cursor:pointer; transition:transform 0.2s ease,border-color 0.2s ease; }
-        .color-choice:hover { transform:scale(1.04); }
-        .color-choice.selected { border-color:#2C4C3B; }
-    </style>
 </head>
 <body>
 
-    <div class="app-container dashboard-layout">
+    <div class="garden-bg"></div>
+    <div class="pixel-tree left"></div>
+    <div class="pixel-tree right"></div>
+    <div class="firefly" style="left:15%;top:65%;animation-duration:5s;"></div>
+    <div class="firefly" style="left:85%;top:60%;animation-duration:4s;animation-delay:1s;"></div>
 
-        <div class="profile-header">
-            <div class="profile-avatar" id="profileAvatar">?</div>
-            <div>
-                <h1 style="margin:0; font-size:28px;" id="profileFullName">Mon profil</h1>
-                <p class="profile-subtitle">Personnalise ton identité et suis ta progression 🌿</p>
+    <div class="page-wrapper">
+        <div class="app-container dashboard-layout">
+
+            <!-- Profile header -->
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">?</div>
+                <div>
+                    <div class="profile-name" id="profileFullName">Mon profil</div>
+                    <div class="profile-subtitle" id="profileEmail">-</div>
+                    <div class="profile-subtitle" id="profileBio" style="font-style:italic; opacity:0.8;"></div>
+                </div>
             </div>
-        </div>
 
-        <div class="card-section">
-            <h2 style="margin:0 0 15px 0; font-size:20px;">Informations du compte</h2>
-            <div class="info-line"><strong>Prénom :</strong> <span id="displayFirstName">-</span></div>
-            <div class="info-line"><strong>Nom :</strong> <span id="displayLastName">-</span></div>
-            <div class="info-line"><strong>Courriel :</strong> <span id="displayEmail">-</span></div>
-            <div class="info-line"><strong>Téléphone :</strong> <span id="displayPhone">-</span></div>
-        </div>
-
-        <div class="card-section">
-            <h2 style="margin:0 0 15px 0; font-size:20px;">Mes statistiques</h2>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-number" id="statCoins">0</div><div class="stat-label">Coins gagnés</div></div>
-                <div class="stat-card"><div class="stat-number" id="statTasks">0</div><div class="stat-label">Activités totales</div></div>
-                <div class="stat-card"><div class="stat-number" id="statCompleted">0</div><div class="stat-label">Activités complétées</div></div>
-                <div class="stat-card"><div class="stat-number" id="statProgress">0%</div><div class="stat-label">Progression globale</div></div>
+            <!-- Stats -->
+            <div class="card-section">
+                <h2 style="margin-bottom:14px;">📊 Mes statistiques</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statCoins">0</div>
+                        <div class="stat-label">💰 Coins gagnés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statTasks">0</div>
+                        <div class="stat-label">📚 Activités totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statCompleted">0</div>
+                        <div class="stat-label">✅ Complétées</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statProgress">0%</div>
+                        <div class="stat-label">🌱 Progression</div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="card-section">
-            <h2 style="margin:0 0 15px 0; font-size:20px;">Personnalisation du profil</h2>
+            <!-- Account info -->
+            <div class="card-section">
+                <h2 style="margin-bottom:14px;">👤 Informations du compte</h2>
+                <div class="info-line">🧑 <strong>Prénom :</strong> <span id="displayFirstName">-</span></div>
+                <div class="info-line">📛 <strong>Nom :</strong> <span id="displayLastName">-</span></div>
+                <div class="info-line">📧 <strong>Courriel :</strong> <span id="displayEmail">-</span></div>
+                <div class="info-line">📞 <strong>Téléphone :</strong> <span id="displayPhone">-</span></div>
+            </div>
 
-            <div class="form-row">
+            <!-- Edit profile -->
+            <div class="card-section">
+                <h2 style="margin-bottom:16px;">🎨 Personnalisation</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Prénom</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Nom</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="firstName">Prénom</label>
-                    <input type="text" id="firstName" required>
+                    <label for="phone">📞 Téléphone</label>
+                    <input type="tel" id="phone" placeholder="123 456-7890">
                 </div>
+
                 <div class="form-group">
-                    <label for="lastName">Nom</label>
-                    <input type="text" id="lastName" required>
+                    <label for="bio">📖 Biographie</label>
+                    <textarea id="bio" placeholder="Ex : Étudiant motivé qui veut réussir sa session et faire grandir son jardin !"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🎨 Couleur de profil</label>
+                    <div class="color-options">
+                        <div class="color-choice" data-color="#4a8a55" style="background:#4a8a55;"></div>
+                        <div class="color-choice" data-color="#4F7CAC" style="background:#4F7CAC;"></div>
+                        <div class="color-choice" data-color="#B07BAC" style="background:#B07BAC;"></div>
+                        <div class="color-choice" data-color="#D98E73" style="background:#D98E73;"></div>
+                    </div>
+                </div>
+
+                <p id="saveMessage" class="success-msg" style="display:none;">✅ Profil sauvegardé !</p>
+                <p id="errorMessage" class="error-msg" style="display:none;"></p>
+
+                <div class="btn-container" style="margin-top:24px;">
+                    <button type="button" id="btnSave" class="btn btn-primary">💾 Enregistrer les modifications</button>
+                    <a href="dashboard.html" class="btn btn-secondary">← Retour au jardin</a>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="phone">No de téléphone</label>
-                <input type="tel" id="phone" placeholder="123 456-7890">
-            </div>
-
-            <div class="form-group">
-                <label for="bio">Biographie</label>
-                <textarea id="bio" placeholder="Ex : Étudiant motivé qui veut réussir sa session."></textarea>
-                <p class="small-note">Ajoute une petite description pour personnaliser ton profil.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Couleur de profil</label>
-                <div class="color-options">
-                    <div class="color-choice" data-color="#6B9F71" style="background:#6B9F71;"></div>
-                    <div class="color-choice" data-color="#4F7CAC" style="background:#4F7CAC;"></div>
-                    <div class="color-choice" data-color="#B07BAC" style="background:#B07BAC;"></div>
-                    <div class="color-choice" data-color="#D98E73" style="background:#D98E73;"></div>
-                </div>
-            </div>
-
-            <p id="saveMessage" style="display:none; color:#6B9F71; font-size:14px; margin-top:10px;">
-                ✅ Profil sauvegardé avec succès.
-            </p>
-            <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:10px;"></p>
-
-            <div class="btn-container" style="margin-top:30px;">
-                <button type="button" id="btnSave" class="btn btn-primary">Enregistrer les modifications</button>
-                <a href="dashboard.html" class="btn btn-secondary">Retour au tableau de bord</a>
-            </div>
         </div>
-
     </div>
 
     <script src="app.js"></script>
     <script>
+        const month = new Date().getMonth();
+        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
+        document.body.className = 'season-' + seasons[month];
+
         if (!requireAuth()) {}
 
-        let selectedColor = '#6B9F71';
+        let selectedColor = '#4a8a55';
 
         function updateColorSelection(color) {
             document.querySelectorAll('.color-choice').forEach(c => {
@@ -119,10 +135,12 @@
                 const data = await apiGetProfil();
 
                 document.getElementById('profileFullName').textContent  = data.prenom + ' ' + data.nom;
-                document.getElementById('displayFirstName').textContent  = data.prenom || '-';
-                document.getElementById('displayLastName').textContent   = data.nom    || '-';
-                document.getElementById('displayEmail').textContent      = data.email  || '-';
-                document.getElementById('displayPhone').textContent      = data.telephone || '-';
+                document.getElementById('profileEmail').textContent     = data.email || '-';
+                document.getElementById('profileBio').textContent       = data.bio || '';
+                document.getElementById('displayFirstName').textContent = data.prenom || '-';
+                document.getElementById('displayLastName').textContent  = data.nom    || '-';
+                document.getElementById('displayEmail').textContent     = data.email  || '-';
+                document.getElementById('displayPhone').textContent     = data.telephone || '-';
 
                 document.getElementById('firstName').value = data.prenom    || '';
                 document.getElementById('lastName').value  = data.nom       || '';
@@ -134,16 +152,14 @@
                 document.getElementById('statCompleted').textContent = data.stats.completees;
                 document.getElementById('statProgress').textContent  = data.stats.progression + '%';
 
-                selectedColor = data.couleur || '#6B9F71';
+                selectedColor = data.couleur || '#4a8a55';
                 const avatar = document.getElementById('profileAvatar');
                 avatar.style.background = selectedColor;
                 avatar.textContent = data.prenom ? data.prenom.charAt(0).toUpperCase() : '?';
                 updateColorSelection(selectedColor);
 
                 setCurrentUser({ ...getCurrentUser(), ...data });
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         document.getElementById('btnSave').addEventListener('click', async function () {
@@ -160,7 +176,7 @@
                 return;
             }
 
-            this.textContent = 'Enregistrement...';
+            this.textContent = '⏳ Enregistrement...';
             this.disabled = true;
             errorMsg.style.display = 'none';
 
@@ -173,7 +189,7 @@
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = err.message;
             } finally {
-                this.textContent = 'Enregistrer les modifications';
+                this.textContent = '💾 Enregistrer les modifications';
                 this.disabled = false;
             }
         });

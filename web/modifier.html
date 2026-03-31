@@ -8,49 +8,56 @@
 </head>
 <body>
 
-    <div class="app-container dashboard-layout">
+    <div class="garden-bg"></div>
+    <div class="pixel-tree left"></div>
+    <div class="pixel-tree right"></div>
+    <div class="firefly" style="left:25%;top:60%;animation-duration:5s;"></div>
 
-        <h1 style="margin-top:0; margin-bottom:10px;">Modifier une activité ✏️</h1>
-        <p style="margin-top:0; margin-bottom:24px; color:#6B9F71;">
-            Mets à jour la date, le type ou la description de ton activité.
-        </p>
+    <div class="page-wrapper">
+        <div class="app-container dashboard-layout" style="max-width:600px;">
 
-        <div class="helper-box">
-            Modifie les informations de ton activité académique dans le calendrier.
+            <h1 style="margin-bottom:8px;">✏️ Modifier une activité</h1>
+            <p style="margin-bottom:24px; color:#5a8a6a; font-size:14px; font-weight:600;">
+                Mets à jour les informations de ton activité.
+            </p>
+
+            <div class="form-group">
+                <label for="date">📅 Date</label>
+                <input type="date" id="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">🌿 Type d'activité</label>
+                <select id="type" required>
+                    <option value="">Choisir...</option>
+                    <option value="etude">🌱 Étude</option>
+                    <option value="tp">🪴 TP</option>
+                    <option value="devoir">🪴 Devoir</option>
+                    <option value="examen">🌸 Examen</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="titre">📝 Titre de l'activité</label>
+                <input type="text" id="titre" placeholder="Ex : Étudier le chapitre 3" required>
+            </div>
+
+            <p id="errorMessage" class="error-msg" style="display:none;"></p>
+
+            <div class="btn-container" style="margin-top:24px;">
+                <button type="button" id="btnModifier" class="btn btn-primary">✅ Enregistrer les modifications</button>
+                <a href="dashboard.html" class="btn btn-secondary">← Annuler</a>
+            </div>
+
         </div>
-
-        <div class="form-group">
-            <label for="date">Date</label>
-            <input type="date" id="date" required>
-        </div>
-
-        <div class="form-group">
-            <label for="type">Type d'activité</label>
-            <select id="type" required>
-                <option value="">Choisir...</option>
-                <option value="etude">🌱 Étude</option>
-                <option value="tp">🪴 TP</option>
-                <option value="devoir">🪴 Devoir</option>
-                <option value="examen">🌸 Examen</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="description">Description</label>
-            <input type="text" id="description" placeholder="Ex : Étudier le chapitre 3 de TCH099" required>
-        </div>
-
-        <p id="errorMessage" style="display:none; color:red; font-size:14px; margin-top:5px;"></p>
-
-        <div class="btn-container" style="margin-top:30px;">
-            <button type="button" id="btnModifier" class="btn btn-primary">Enregistrer les modifications</button>
-            <a href="dashboard.html" class="btn btn-secondary">Annuler</a>
-        </div>
-
     </div>
 
     <script src="app.js"></script>
     <script>
+        const month = new Date().getMonth();
+        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
+        document.body.className = 'season-' + seasons[month];
+
         if (!requireAuth()) {}
 
         const editTaskId = sessionStorage.getItem('editTaskId');
@@ -61,39 +68,36 @@
                 const taches = await apiGetTaches();
                 const tache  = taches.find(t => t.id == editTaskId);
                 if (!tache) { window.location.href = 'dashboard.html'; return; }
-
                 document.getElementById('date').value        = tache.date;
                 document.getElementById('type').value        = tache.type;
-                document.getElementById('description').value = tache.nom;
-            } catch (err) {
-                window.location.href = 'dashboard.html';
-            }
+                document.getElementById('titre').value = tache.titre;
+            } catch (err) { window.location.href = 'dashboard.html'; }
         }
 
         document.getElementById('btnModifier').addEventListener('click', async function () {
             const date        = document.getElementById('date').value;
             const type        = document.getElementById('type').value;
-            const description = document.getElementById('description').value.trim();
+            const titre = document.getElementById('titre').value.trim();
             const errorMsg    = document.getElementById('errorMessage');
 
-            if (!date || !type || !description) {
+            if (!date || !type || !titre) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = 'Tous les champs sont obligatoires.';
                 return;
             }
 
-            this.textContent = 'Enregistrement...';
+            this.textContent = '⏳ Enregistrement...';
             this.disabled = true;
             errorMsg.style.display = 'none';
 
             try {
-                await apiModifierTache(editTaskId, description, type, date);
+                await apiModifierTache(editTaskId, titre, type, date);
                 sessionStorage.removeItem('editTaskId');
                 window.location.href = 'dashboard.html';
             } catch (err) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = err.message;
-                this.textContent = 'Enregistrer les modifications';
+                this.textContent = '✅ Enregistrer les modifications';
                 this.disabled = false;
             }
         });
