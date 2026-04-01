@@ -1,5 +1,31 @@
 const Tache = require('../models/TacheModel');
+const Utilisateur = require('../models/UtilisateurModel');
 
+exports.toggleStatut = async (req, res) => {
+    const id_tache = req.params.id;
+
+    try {
+        const tache = await Tache.findById(id_tache);
+        if (!tache) return res.status(404).json({ message: "Tâche non trouvée" });
+
+        // Inversion du statut
+        const nouveauStatut = tache.statut === 'en_attente' ? 'completee' : 'en_attente';
+        await Tache.updateStatut(id_tache, nouveauStatut);
+
+        let nouveauxCoins = null;
+
+        // Si on vient de compléter la tâche, on donne 10 coins
+        if (nouveauStatut === 'completee') {
+            const [user] = await db.execute('SELECT coins FROM Utilisateur WHERE id = ?', [tache.id_utilisateur]);
+            nouveauxCoins = (user[0].coins || 0) + 10;
+            await db.execute('UPDATE Utilisateur SET coins = ? WHERE id = ?', [nouveauxCoins, tache.id_utilisateur]);
+        }
+
+        res.json({ nouveauStatut, nouveauxCoins });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors du toggle" });
+    }
+};
 exports.ajouterTache = async (req, res) => {
     // On extrait exactement ce que app.js envoie
     const { titre, type, date_limite, id_utilisateur } = req.body;

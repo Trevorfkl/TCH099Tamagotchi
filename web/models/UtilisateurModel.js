@@ -18,6 +18,20 @@ class Utilisateur {
         );
         return result.insertId; // Retourne l'ID généré par AUTO_INCREMENT
     }
+    static async findById(id) {
+    const [rows] = await db.execute('SELECT * FROM Utilisateur WHERE id = ?', [id]);
+    return rows[0];
+}
+
+static async updateProfile(id, data) {
+    const { prenom, nom, telephone, biographie, couleur_profil } = data;
+    await db.execute(
+        `UPDATE Utilisateur 
+         SET prenom = ?, nom = ?, biographie = ?, couleur_profil = ? 
+         WHERE id = ?`,
+        [prenom, nom, biographie, couleur_profil, id]
+    );
+}
 }
 
 module.exports = Utilisateur;

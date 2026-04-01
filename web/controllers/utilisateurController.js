@@ -39,3 +39,21 @@ exports.connecterUtilisateur = async (req, res) => {
         res.status(500).json({ message: "Erreur technique lors de la connexion." });
     }
 };
+exports.getProfil = async (req, res) => {
+    try {
+        const user = await Utilisateur.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur profil" });
+    }
+};
+
+exports.modifierProfil = async (req, res) => {
+    try {
+        await Utilisateur.updateProfile(req.params.id, req.body);
+        res.json({ message: "Profil mis à jour" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur mise à jour" });
+    }
+};

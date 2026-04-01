@@ -37,6 +37,14 @@ class Tache {
         );
         return rows;
     }
+    static async findById(id) {
+        const [rows] = await db.execute('SELECT * FROM Tache WHERE id = ?', [id]);
+        return rows[0];
+    }
+
+    static async updateStatut(id, nouveauStatut) {
+        await db.execute('UPDATE Tache SET statut = ? WHERE id = ?', [nouveauStatut, id]);
+    }
 }
 
 module.exports = Tache;

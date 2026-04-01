@@ -5,4 +5,6 @@ const utilisateurController = require('../controllers/utilisateurController');
 // Définition de la route POST
 router.post('/inscription', utilisateurController.inscrireUtilisateur);
 router.post('/connexion', utilisateurController.connecterUtilisateur);
+router.get('/utilisateurs/:id', utilisateurController.getProfil);
+router.put('/utilisateurs/:id', utilisateurController.modifierProfil);
 module.exports = router;
