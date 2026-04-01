@@ -4,8 +4,6 @@
 -- ====================================================================
 
 -- Table 1: Utilisateur
--- Stocke les informations des utilisateurs et leur progression
--- Chaque utilisateur a une identité unique, un email et un mot de passe
 CREATE TABLE Utilisateur (
   id INT PRIMARY KEY AUTO_INCREMENT,
   prenom VARCHAR(50) NOT NULL,
@@ -19,8 +17,6 @@ CREATE TABLE Utilisateur (
 );
 
 -- Table 2: Plante
--- Catalogue des plantes disponibles dans le jardin virtuel
--- Chaque plante a trois stades de croissance avec des images associées
 CREATE TABLE Plante (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nom VARCHAR(100) NOT NULL,
@@ -32,9 +28,6 @@ CREATE TABLE Plante (
 );
 
 -- Table 3: CaseJardin
--- Représente chaque jour du jardin virtuel de l'utilisateur
--- Contient la plante cultivée ce jour-là et l'état de sa croissance
--- Dépend de Utilisateur et Plante
 CREATE TABLE CaseJardin (
   id INT PRIMARY KEY AUTO_INCREMENT,
   numero_jour INT NOT NULL,
@@ -48,33 +41,21 @@ CREATE TABLE CaseJardin (
 );
 
 -- Table 4: Tache
--- Liste des tâches académiques assignées aux utilisateurs
--- Les tâches sont liées à un utilisateur et optionnellement à une case du jardin
--- Dépend de Utilisateur et CaseJardin
 CREATE TABLE Tache (
   id INT PRIMARY KEY AUTO_INCREMENT,
   titre VARCHAR(150) NOT NULL,
   date_limite DATE,
-  statut ENUM('en_attente', 'completee') DEFAULT 'en_attente',
+  statut ENUM('en_attente', 'en_cours', 'completee') DEFAULT 'en_attente',
   date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+  description TEXT NULL,
+  type ENUM('etude', 'travail', 'sante', 'personnel', 'projet', 'tp', 'devoir', 'examen') DEFAULT 'etude',
   id_utilisateur INT NOT NULL,
   id_case_jardin INT,
   FOREIGN KEY (id_utilisateur) REFERENCES Utilisateur(id) ON DELETE CASCADE,
   FOREIGN KEY (id_case_jardin) REFERENCES CaseJardin(id) ON DELETE SET NULL
-  -- ====================================================================
--- MODIFICATIONS DE SCHÉMA
--- ====================================================================
-
--- Ajouter les colonnes description et type à la table Tache
-ALTER TABLE Tache
-ADD COLUMN description TEXT NULL,
-ADD COLUMN type ENUM('etude', 'travail', 'sante', 'personnel', 'projet', 'tp', 'devoir', 'examen') DEFAULT 'etude';
 );
 
 -- Table 5: Amis
--- Gère les relations d'amitié entre utilisateurs
--- Les amis peuvent être en attente, acceptés ou refusés
--- Dépend de Utilisateur
 CREATE TABLE Amis (
   id INT PRIMARY KEY AUTO_INCREMENT,
   id_utilisateur1 INT NOT NULL,
@@ -86,45 +67,16 @@ CREATE TABLE Amis (
 );
 
 -- ====================================================================
--- MODIFICATIONS DE SCHÉMA
--- ====================================================================
-
--- Ajouter les colonnes description et type à la table Tache
-ALTER TABLE Tache
-ADD COLUMN description TEXT NULL,
-ADD COLUMN type ENUM('etude', 'travail', 'sante', 'personnel', 'projet') DEFAULT 'etude';
-
--- ====================================================================
 -- DONNÉES D'EXEMPLE
 -- ====================================================================
 
--- Insertion de 2 utilisateurs
-INSERT INTO Utilisateur (prenom, nom, courriel, mot_de_passe, coins, biographie, couleur_profil) VALUES
-('Sophie', 'Leclerc', 'sophie.leclerc@email.com', 'hashed_password_123', 150, 'Étudiante en informatique passionnée par les projets académiques', '#6A9E6F'),
-('Marc', 'Dupont', 'marc.dupont@email.com', 'hashed_password_456', 200, 'Développeur et étudiant avec un intérêt pour la gamification', '#4A7C59');
-
--- Insertion de 3 plantes
+-- Insertion de plantes (correspond aux plantes Android)
 INSERT INTO Plante (nom, description, cout_coins, image_stage1, image_stage2, image_stage3) VALUES
-('Tomate', 'Une plante productive pour récompenser la discipline académique', 50, 'tomate_stage1.png', 'tomate_stage2.png', 'tomate_stage3.png'),
-('Fleur Sauvage', 'Une fleur colorée qui symbolise la croissance personnelle', 30, 'fleur_stage1.png', 'fleur_stage2.png', 'fleur_stage3.png'),
-('Cactus Résistant', 'Un cactus robuste représentant la persévérance', 75, 'cactus_stage1.png', 'cactus_stage2.png', 'cactus_stage3.png');
-
--- Insertion de 2 cases de jardin
-INSERT INTO CaseJardin (numero_jour, stage_croissance, taches_completees, total_taches, id_utilisateur, id_plante) VALUES
-(1, 2, 3, 4, 1, 1),
-(1, 1, 2, 3, 2, 2);
-
--- Insertion de 3 tâches
-INSERT INTO Tache (titre, date_limite, statut, id_utilisateur, id_case_jardin) VALUES
-('Compléter le devoir de mathématiques', '2026-04-05', 'en_attente', 1, 1),
-('Lire le chapitre 3 du manuel', '2026-04-03', 'completee', 1, 1),
-('Préparer la présentation du projet', '2026-04-10', 'en_attente', 2, 2);
-
--- Insertion de 1 amitié
-INSERT INTO Amis (id_utilisateur1, id_utilisateur2, statut) VALUES
-(1, 2, 'accepte');
+('Plante de base', 'La plante de départ, gratuite pour tous', 0, 'plant1_stage1.png', 'plant1_stage2.png', 'plant1_stage3.png'),
+('Tournesol', 'Un joyeux tournesol qui suit le soleil', 75, 'sunflower_stage1.png', 'sunflower_stage2.png', 'sunflower_stage3.png'),
+('Cerisier', 'Un magnifique cerisier en fleurs', 100, 'cherry_stage1.png', 'cherry_stage2.png', 'cherry_stage3.png'),
+('Champignon', 'Un champignon mystérieux et résistant', 150, 'mushroom_stage1.png', 'mushroom_stage2.png', 'mushroom_stage3.png');
 
 -- ====================================================================
 -- FIN DU SCHÉMA
 -- ====================================================================
-

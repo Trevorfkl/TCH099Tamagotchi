@@ -60,11 +60,11 @@
         if (getToken()) window.location.href = 'dashboard.html';
 
         document.getElementById('btnConnexion').addEventListener('click', async function () {
-            const email    = document.getElementById('emailInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-            const errorMsg = document.getElementById('errorMessage');
+            const courriel   = document.getElementById('emailInput').value.trim();
+            const motDePasse = document.getElementById('passwordInput').value.trim();
+            const errorMsg   = document.getElementById('errorMessage');
 
-            if (!email || !password) {
+            if (!courriel || !motDePasse) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = 'Email et mot de passe requis.';
                 return;
@@ -75,7 +75,7 @@
             errorMsg.style.display = 'none';
 
             try {
-                const data = await apiConnexion(email, password);
+                const data = await apiConnexion(courriel, motDePasse);
                 setToken(data.token);
                 setCurrentUser(data.utilisateur);
                 window.location.href = 'dashboard.html';

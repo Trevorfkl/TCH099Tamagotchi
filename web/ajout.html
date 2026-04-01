@@ -66,15 +66,15 @@
 
         if (!requireAuth()) {}
 
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('date_limite').value = new Date().toISOString().split('T')[0];
 
         document.getElementById('btnAjouter').addEventListener('click', async function () {
-            const date        = document.getElementById('date').value;
-            const type        = document.getElementById('type').value;
-            const titre       = document.getElementById('titre').value.trim();
-            const errorMsg    = document.getElementById('errorMessage');
+            const date     = document.getElementById('date_limite').value;
+            const type     = document.getElementById('type').value;
+            const titre    = document.getElementById('titre').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
 
-            if (!date || !type || !description) {
+            if (!date || !type || !titre) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = 'Tous les champs sont obligatoires.';
                 return;
@@ -85,7 +85,7 @@
             errorMsg.style.display = 'none';
 
             try {
-                await apiCreerTache(titre, type, date_limite);
+                await apiCreerTache(titre, type, date, '');
                 window.location.href = 'dashboard.html';
             } catch (err) {
                 errorMsg.style.display = 'block';

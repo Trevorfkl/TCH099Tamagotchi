@@ -56,7 +56,6 @@
                 <div class="info-line">🧑 <strong>Prénom :</strong> <span id="displayFirstName">-</span></div>
                 <div class="info-line">📛 <strong>Nom :</strong> <span id="displayLastName">-</span></div>
                 <div class="info-line">📧 <strong>Courriel :</strong> <span id="displayEmail">-</span></div>
-                <div class="info-line">📞 <strong>Téléphone :</strong> <span id="displayPhone">-</span></div>
             </div>
 
             <!-- Edit profile -->
@@ -72,11 +71,6 @@
                         <label for="lastName">Nom</label>
                         <input type="text" id="lastName" required>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">📞 Téléphone</label>
-                    <input type="tel" id="phone" placeholder="123 456-7890">
                 </div>
 
                 <div class="form-group">
@@ -132,27 +126,25 @@
 
         async function loadProfile() {
             try {
-                const data = await apiGetProfil();
+                const [data, stats] = await Promise.all([apiGetProfil(), apiGetStats()]);
 
                 document.getElementById('profileFullName').textContent  = data.prenom + ' ' + data.nom;
-                document.getElementById('profileEmail').textContent     = data.email || '-';
-                document.getElementById('profileBio').textContent       = data.bio || '';
-                document.getElementById('displayFirstName').textContent = data.prenom || '-';
-                document.getElementById('displayLastName').textContent  = data.nom    || '-';
-                document.getElementById('displayEmail').textContent     = data.email  || '-';
-                document.getElementById('displayPhone').textContent     = data.telephone || '-';
+                document.getElementById('profileEmail').textContent     = data.courriel || '-';
+                document.getElementById('profileBio').textContent       = data.biographie || '';
+                document.getElementById('displayFirstName').textContent = data.prenom   || '-';
+                document.getElementById('displayLastName').textContent  = data.nom      || '-';
+                document.getElementById('displayEmail').textContent     = data.courriel || '-';
 
-                document.getElementById('firstName').value = data.prenom    || '';
-                document.getElementById('lastName').value  = data.nom       || '';
-                document.getElementById('phone').value     = data.telephone || '';
-                document.getElementById('bio').value       = data.bio       || '';
+                document.getElementById('firstName').value = data.prenom      || '';
+                document.getElementById('lastName').value  = data.nom         || '';
+                document.getElementById('bio').value       = data.biographie  || '';
 
-                document.getElementById('statCoins').textContent     = data.coins;
-                document.getElementById('statTasks').textContent     = data.stats.total;
-                document.getElementById('statCompleted').textContent = data.stats.completees;
-                document.getElementById('statProgress').textContent  = data.stats.progression + '%';
+                document.getElementById('statCoins').textContent     = data.coins || 0;
+                document.getElementById('statTasks').textContent     = stats.totalTaches || 0;
+                document.getElementById('statCompleted').textContent = stats.tachesCompletees || 0;
+                document.getElementById('statProgress').textContent  = (stats.pourcentageCompletion || 0) + '%';
 
-                selectedColor = data.couleur || '#4a8a55';
+                selectedColor = data.couleur_profil || '#4a8a55';
                 const avatar = document.getElementById('profileAvatar');
                 avatar.style.background = selectedColor;
                 avatar.textContent = data.prenom ? data.prenom.charAt(0).toUpperCase() : '?';
@@ -163,12 +155,11 @@
         }
 
         document.getElementById('btnSave').addEventListener('click', async function () {
-            const prenom    = document.getElementById('firstName').value.trim();
-            const nom       = document.getElementById('lastName').value.trim();
-            const telephone = document.getElementById('phone').value.trim();
-            const bio       = document.getElementById('bio').value.trim();
-            const errorMsg  = document.getElementById('errorMessage');
-            const saveMsg   = document.getElementById('saveMessage');
+            const prenom   = document.getElementById('firstName').value.trim();
+            const nom      = document.getElementById('lastName').value.trim();
+            const bio      = document.getElementById('bio').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
+            const saveMsg  = document.getElementById('saveMessage');
 
             if (!prenom || !nom) {
                 errorMsg.style.display = 'block';
@@ -181,7 +172,8 @@
             errorMsg.style.display = 'none';
 
             try {
-                await apiUpdateProfil(prenom, nom, telephone, bio, selectedColor);
+                await apiUpdateProfil(prenom, nom, bio);
+                await apiUpdateCouleur(selectedColor);
                 await loadProfile();
                 saveMsg.style.display = 'block';
                 setTimeout(() => saveMsg.style.display = 'none', 2500);

@@ -97,13 +97,19 @@
 
         async function init() {
             try {
-                const user = getCurrentUser();
-                if (user) {
-                    document.getElementById('welcomeText').textContent = 'Bonjour, ' + user.prenom + ' ! 👋';
-                    document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
-                }
                 document.getElementById('seasonText').textContent = seasonNames[currentSeason];
-                allTaches = await apiGetTaches();
+
+                // Charger profil frais depuis l'API pour avoir les vrais coins
+                const [profil, taches] = await Promise.all([apiGetProfil(), apiGetTaches()]);
+
+                document.getElementById('welcomeText').textContent = 'Bonjour, ' + profil.prenom + ' ! 👋';
+                document.getElementById('coinsBox').textContent = '💰 ' + (profil.coins || 0) + ' coins';
+
+                // Mettre à jour le localStorage avec les données fraîches
+                const user = getCurrentUser();
+                if (user) setCurrentUser({ ...user, ...profil });
+
+                allTaches = taches;
                 renderCalendar();
                 renderTasks();
             } catch (err) { console.error(err); }
@@ -190,7 +196,7 @@
                 const div = document.createElement('div');
                 div.className = 'task-item';
                 div.innerHTML = `
-                    <div class="${checkClass}" onclick="toggleTask(${task.id})">${checkSymbol}</div>
+                    <div class="${checkClass}" onclick="toggleTask(${task.id}, ${task.completee})">${checkSymbol}</div>
                     <div style="flex:1;">
                         <div class="${textClass}">${typeEmoji} ${task.nom}</div>
                         <div class="task-date">${typeLabel} • ${task.date}</div>
@@ -226,18 +232,23 @@
             }
         }
 
-        async function toggleTask(id) {
+        async function toggleTask(id, estCompletee) {
             try {
-                const result = await apiCompleterTache(id);
+                const statutActuel = estCompletee ? 'completee' : 'en_attente';
+                const result = await apiCompleterTache(id, statutActuel);
                 allTaches = allTaches.map(t => t.id === id ? { ...t, completee: result.completee } : t);
-                if (result.coins !== null) {
+
+                // Recharger le profil pour avoir les coins à jour
+                try {
+                    const profil = await apiGetProfil();
                     const user = getCurrentUser();
                     if (user) {
-                        user.coins = result.coins;
+                        user.coins = profil.coins;
                         setCurrentUser(user);
-                        document.getElementById('coinsBox').textContent = '💰 ' + result.coins + ' coins';
                     }
-                }
+                    document.getElementById('coinsBox').textContent = '💰 ' + profil.coins + ' coins';
+                } catch (e) { /* ignore */ }
+
                 renderCalendar();
                 renderTasks();
             } catch (err) { alert('Erreur : ' + err.message); }
@@ -248,6 +259,15 @@
             try {
                 await apiSupprimerTache(id);
                 allTaches = allTaches.filter(t => t.id !== id);
+
+                // Recharger les coins (la suppression d'une tâche complétée retire des coins)
+                try {
+                    const profil = await apiGetProfil();
+                    const user = getCurrentUser();
+                    if (user) { user.coins = profil.coins; setCurrentUser(user); }
+                    document.getElementById('coinsBox').textContent = '💰 ' + profil.coins + ' coins';
+                } catch (e) { /* ignore */ }
+
                 renderCalendar();
                 renderTasks();
             } catch (err) { alert('Erreur : ' + err.message); }

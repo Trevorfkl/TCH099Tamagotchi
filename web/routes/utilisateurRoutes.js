@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const utilisateurController = require('../controllers/utilisateurController');
+const AuthController = require('../controllers/utilisateurController');
 
-// Définition de la route POST
-router.post('/inscription', utilisateurController.inscrireUtilisateur);
-router.post('/connexion', utilisateurController.connecterUtilisateur);
-router.get('/utilisateurs/:id', utilisateurController.getProfil);
-router.put('/utilisateurs/:id', utilisateurController.modifierProfil);
+// POST /api/auth/register
+router.post('/register', (req, res) => AuthController.register(req, res));
+
+// POST /api/auth/login
+router.post('/login', (req, res) => AuthController.login(req, res));
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', (req, res) => AuthController.forgotPassword(req, res));
+
 module.exports = router;
