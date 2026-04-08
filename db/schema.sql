@@ -15,6 +15,7 @@ CREATE TABLE Utilisateur (
   coins INT DEFAULT 0,
   biographie TEXT,
   couleur_profil VARCHAR(7) DEFAULT '#6A9E6F',
+  role ENUM('utilisateur', 'admin') DEFAULT 'utilisateur', -- <-- NOUVELLE COLONNE ICI
   date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
