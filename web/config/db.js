@@ -5,10 +5,11 @@ const pool = mysql.createPool({
     user: 'root',
     password: '',
     database: 'growchi',
+    port: 3306,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
     timezone: '+00:00'
 });
 
-module.exports = pool;
+module.exports = pool;

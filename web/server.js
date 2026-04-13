@@ -7,6 +7,7 @@ const tacheRoutes   = require('./routes/tacheRoutes');
 const gardenRoutes  = require('./routes/gardenRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 
+const boutiqueRoutes = require('./routes/boutiqueRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/auth',    authRoutes);
 app.use('/api/tasks',   tacheRoutes);
 app.use('/api/garden',  gardenRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/boutique', boutiqueRoutes);
 
 // Santé API
 app.get('/api/health', (req, res) => {

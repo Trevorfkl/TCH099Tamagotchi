@@ -15,6 +15,7 @@ class ProfileController {
         }
     }
 
+
     // PUT /api/profile
     static async mettreAJourProfil(req, res) {
         try {
@@ -102,6 +103,59 @@ class ProfileController {
             return res.status(500).json({ message: 'Erreur lors de la récupération des stats' });
         }
     }
+    // PUT /api/profile/test-coins
+    static async ajouterTestCoins(req, res) {
+        try {
+            await UtilisateurModel.ajouterCoins(req.userId, 100);
+            return res.status(200).json({ message: '100 jetons ajoutés (Triche Admin)' });
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({ message: 'Erreur lors de l\'ajout test' });
+        }
+    }
+
+    // PUT /api/profile/icone
+    static async updateIcone(req, res) {
+        try {
+            const { icone } = req.body;
+            await UtilisateurModel.mettreAJourIcone(req.userId, icone);
+            return res.status(200).json({ message: 'Icône mise à jour !' });
+        } catch (e) {
+            return res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'icône' });
+        }
+    }
+
+    // PUT /api/profile/equiper
+    static async equiper(req, res) {
+        try {
+            const { type, image_url } = req.body;
+            await UtilisateurModel.equiperItem(req.userId, type, image_url);
+            return res.status(200).json({ message: 'Équipement mis à jour !' });
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({ message: 'Erreur lors de l\'équipement' });
+        }
+    }
+    // PUT /api/profile/taches-type/plante
+    static async equiperPlanteParType(req, res) {
+        try {
+            const db = require('../config/db');
+            const { type_tache, plante } = req.body;
+            
+            // 1. Sauvegarder pour les FUTURES tâches
+            const colonnePref = 'pref_' + type_tache; // Devient "pref_etude", "pref_devoir", etc.
+            await db.execute(`UPDATE Utilisateur SET ${colonnePref} = ? WHERE id = ?`, [plante, req.userId]);
+            
+            // 2. Mettre à jour les ANCIENNES tâches
+            await db.execute('UPDATE Tache SET icone = ? WHERE id_utilisateur = ? AND type = ?', [plante, req.userId, type_tache]);
+            
+            return res.status(200).json({ message: 'Plante par défaut modifiée avec succès !' });
+        } catch(e) { 
+            console.error(e);
+            return res.status(500).json({ message: 'Erreur lors de la mise à jour' }); 
+        }
+    }
+    
 }
 
 module.exports = ProfileController;

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growchi - Gestion Boutique</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-form { background: #f0f7f2; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px dashed #5a8a6a; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 10px; }
+        .form-row > div { flex: 1; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .admin-table th, .admin-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .admin-table th { background-color: #f0f7f2; color: #5a8a6a; }
+    </style>
+</head>
+<body class="season-summer">
+
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:800px; margin-top:30px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>⚙️ Gestion de la Boutique</h2>
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour</a>
+            </div>
+
+            <div class="admin-form">
+                <h3 style="margin-bottom: 15px;">➕ Ajouter un nouvel article</h3>
+                
+                <div class="form-row">
+                    <div>
+                        <label>Nom de l'article</label>
+                        <input type="text" id="nomArticle" placeholder="Ex: Cerisier Magique">
+                    </div>
+                    <div>
+                        <label>Catégorie</label>
+                        <select id="typeArticle">
+                            <option value="plante">Plante du Jardin</option>
+                            <option value="theme">Thème de l'application</option>
+                            <option value="icone_profil">Icône de Profil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Prix (Coins)</label>
+                        <input type="number" id="prixArticle" value="0">
+                    </div>
+                    <div>
+                        <label>Milestone: Tâches complétées requises</label>
+                        <input type="number" id="milestoneTaches" value="0" placeholder="0 = pas de restriction">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Image (Emoji ou nom de fichier ex: cactus.png)</label>
+                        <input type="text" id="imageArticle" placeholder="Ex: 🌵 ou plant1.png">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="ajouterArticle()">Créer l'article dans la base de données</button>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Prix</th>
+                        <th>Milestone</th>
+                        <th>Visibilité</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="shopTableBody">
+                    <tr><td colspan="6" style="text-align:center;">Chargement des articles...</td></tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if (!requireAuth()) {}
+
+        // Recharge le tableau à partir de la base de données
+        async function chargerItemsAdmin() {
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/boutique/admin', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await reponse.json();
+                const tbody = document.getElementById('shopTableBody');
+                tbody.innerHTML = '';
+
+                if (!data.items || data.items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun article dans la boutique.</td></tr>';
+                    return;
+                }
+
+                data.items.forEach(item => {
+                    // Vérifie si c'est 1 (MySQL) ou true (JSON)
+                    const estVisible = item.est_visible === 1 || item.est_visible === true; 
+                    
+                    // Le bouton change dynamiquement !
+                    const btnVisibility = estVisible 
+                        ? `<button class="btn btn-secondary" style="background:#e8f5e9; color:#2e7d32; padding:6px; border:1px solid #2e7d32;" onclick="toggleVisibilite(${item.id}, false)">👁️ Visible</button>`
+                        : `<button class="btn btn-secondary" style="background:#ffebee; color:#c62828; padding:6px; border:1px solid #c62828;" onclick="toggleVisibilite(${item.id}, true)">🙈 Caché</button>`;
+
+                    const milestoneText = item.condition_taches_completees > 0 ? `🔒 ${item.condition_taches_completees} tâches` : 'Aucun';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span style="font-size:20px;">${item.image_url}</span> ${item.nom}</td>
+                            <td>${item.type}</td>
+                            <td>💰 ${item.prix_coins}</td>
+                            <td>${milestoneText}</td>
+                            <td>${btnVisibility}</td>
+                            <td><button class="btn btn-secondary" style="padding:6px; background:rgba(255,100,100,0.15); color:#c62828;" onclick="supprimerItem(${item.id})">🗑️</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error("Erreur de chargement", e); }
+        }
+
+        async function ajouterArticle() {
+            const nom = document.getElementById('nomArticle').value;
+            const type = document.getElementById('typeArticle').value;
+            const prix = document.getElementById('prixArticle').value;
+            const milestone = document.getElementById('milestoneTaches').value;
+            const image = document.getElementById('imageArticle').value;
+
+            if (!nom) { alert('Le nom de l\'article est obligatoire !'); return; }
+
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/boutique', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ nom, type, prix, milestone, image, est_visible: true })
+                });
+                
+                if (reponse.ok) {
+                    document.getElementById('nomArticle').value = ''; 
+                    document.getElementById('imageArticle').value = '';
+                    chargerItemsAdmin(); // Actualise sans recharger la page
+                } else {
+                    alert('Erreur du serveur lors de la création.');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Fonction pour gérer le 👁️ / 🙈
+        async function toggleVisibilite(id, rendreVisible) {
+            try {
+                const token = getToken();
+                await fetch(`http://localhost:3000/api/boutique/${id}/visibility`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ est_visible: rendreVisible })
+                });
+                chargerItemsAdmin(); 
+            } catch (e) { console.error(e); }
+        }
+
+        async function supprimerItem(id) {
+            if(!confirm("Supprimer cet article définitivement ?")) return;
+            try {
+                const token = getToken();
+                await fetch(`http://localhost:3000/api/boutique/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                chargerItemsAdmin(); 
+            } catch (e) { console.error(e); }
+        }
+
+        chargerItemsAdmin();
+    </script>
+</body>
+</html>

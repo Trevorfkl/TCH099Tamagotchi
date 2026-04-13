@@ -71,6 +71,12 @@
                 errorMsg.textContent = 'Tous les champs sont obligatoires.';
                 return;
             }
+            
+            if (!courriel.includes('@')) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Veuillez entrer une adresse courriel valide (doit contenir un @).';
+                return;
+            }
 
             this.textContent = '🌱 Création...';
             this.disabled = true;

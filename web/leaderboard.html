@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growchi - Classement 🏆</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .filters { display: flex; gap: 10px; margin-bottom: 20px; }
+        .filter-select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;}
+        .rank-row { display: flex; align-items: center; background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .rank-num { font-size: 24px; font-weight: bold; width: 40px; color: #5a8a6a; }
+        .rank-info { flex: 1; }
+        .rank-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; }
+        .rank-stats { font-size: 13px; color: #666; }
+        .rank-score { font-size: 18px; font-weight: bold; color: #f57c00; }
+        
+        /* Podiums spéciaux */
+        .rank-1 .rank-num { color: #FFD700; font-size: 28px; } /* Or */
+        .rank-2 .rank-num { color: #C0C0C0; font-size: 26px; } /* Argent */
+        .rank-3 .rank-num { color: #CD7F32; font-size: 24px; } /* Bronze */
+    </style>
+</head>
+<body class="season-spring">
+
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:600px; margin-top:30px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🏆 Top Jardiniers</h2>
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour</a>
+            </div>
+
+            <div class="filters">
+                <select id="periodeSelect" class="filter-select" onchange="chargerLeaderboard()">
+                    <option value="toujours">Depuis toujours</option>
+                    <option value="annee">Cette année</option>
+                    <option value="30jours">30 derniers jours</option>
+                    <option value="7jours">7 derniers jours</option>
+                </select>
+
+                <select id="typeSelect" class="filter-select" onchange="chargerLeaderboard()">
+                    <option value="toutes">Toutes les tâches</option>
+                    <option value="etude">Étude 🌱</option>
+                    <option value="devoir">Devoir 🪴</option>
+                    <option value="tp">TP 🪴</option>
+                    <option value="examen">Examen 🌸</option>
+                    <option value="projet">Projet 🛠️</option>
+                </select>
+
+                <select id="triSelect" class="filter-select" onchange="afficherDonnees()">
+                    <option value="taches_completees">Trier par: Tâches Complétées ✅</option>
+                    <option value="total_taches">Trier par: Tâches Totales 📊</option>
+                    <option value="coins">Trier par: Jetons 💰</option>
+                </select>
+            </div>
+
+            <div id="leaderboardList">
+                <p style="text-align: center;">Chargement des données... 🌱</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if (!requireAuth()) {}
+
+        let donneesBrutes = [];
+
+        async function chargerLeaderboard() {
+            const periode = document.getElementById('periodeSelect').value;
+            const typeTache = document.getElementById('typeSelect').value; // <-- NOUVEAU
+            const token = getToken();
+            
+            try {
+                const reponse = await fetch(`http://localhost:3000/api/auth/leaderboard?periode=${periode}&type=${typeTache}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await reponse.json();
+                donneesBrutes = data.leaderboard;
+                afficherDonnees();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('leaderboardList').innerHTML = '<p class="empty-msg">Erreur de chargement 🥀</p>';
+            }
+        }
+
+        function afficherDonnees() {
+            const critereDeTri = document.getElementById('triSelect').value;
+            const conteneur = document.getElementById('leaderboardList');
+            conteneur.innerHTML = '';
+
+            // Tri de la liste en fonction du choix de l'utilisateur (décroissant)
+            const listeTriee = [...donneesBrutes].sort((a, b) => b[critereDeTri] - a[critereDeTri]);
+
+            if (listeTriee.length === 0) {
+                conteneur.innerHTML = '<p class="empty-msg">Aucune donnée pour cette période.</p>';
+                return;
+            }
+
+            listeTriee.forEach((user, index) => {
+                const position = index + 1;
+                let classeRang = '';
+                if (position === 1) classeRang = 'rank-1';
+                else if (position === 2) classeRang = 'rank-2';
+                else if (position === 3) classeRang = 'rank-3';
+
+                // On met en valeur la statistique choisie pour le tri
+                let scoreAffiche = '';
+                if (critereDeTri === 'coins') scoreAffiche = `💰 ${user.coins}`;
+                if (critereDeTri === 'taches_completees') scoreAffiche = `✅ ${user.taches_completees}`;
+                if (critereDeTri === 'total_taches') scoreAffiche = `📊 ${user.total_taches}`;
+
+                const row = document.createElement('div');
+                row.className = `rank-row ${classeRang}`;
+                row.innerHTML = `
+                    <div class="rank-num">#${position}</div>
+                    <div class="rank-info">
+                        <div class="rank-name" style="color: ${user.couleur_profil || '#333'}">${user.prenom} ${user.nom}</div>
+                        <div class="rank-stats">✅ ${user.taches_completees} complétées / 📊 ${user.total_taches} totales</div>
+                    </div>
+                    <div class="rank-score">${scoreAffiche}</div>
+                `;
+                conteneur.appendChild(row);
+            });
+        }
+
+        // Chargement initial
+        chargerLeaderboard();
+    </script>
+</body>
+</html>

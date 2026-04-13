@@ -71,11 +71,27 @@
             </div>
 
             <!-- Buttons -->
+             
             <div class="btn-container" style="margin-top:8px;">
                 <a href="ajout.html" class="btn btn-primary">🌱 Ajouter une activité</a>
+                <a href="leaderboard.html" class="btn btn-secondary">🏆 Classement</a>
                 <a href="profile.html" class="btn btn-secondary">👤 Mon profil</a>
-                <button type="button" class="btn btn-secondary" onclick="logout()" style="background:rgba(255,100,100,0.15); color:#c62828; border-color:rgba(255,100,100,0.3);">🚪 Déconnexion</button>
-            </div>
+                <a href="shop.html" class="btn btn-secondary">🛒 Boutique</a>
+    
+            <div style="position:relative; display:inline-block;">
+                <button type="button" class="btn btn-secondary" id="btnAdminMenu" onclick="toggleAdminMenu()" style="display:none; padding: 10px 15px;">⚙️</button>
+        
+            <div id="adminPopup" class="admin-popup" style="display:none;">
+                <a href="admin_users.html">👥 Liste des utilisateurs</a>
+                <a href="admin_shop.html">🛒++ Liste du shop</a>
+            <button onclick="ajouterJetonsTest()">💰 Test: +100 Coins</button>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="logout()" style="background:rgba(255,100,100,0.15); color:#c62828; border-color:rgba(255,100,100,0.3);">🚪 Déconnexion</button>
+</div>
+
+            
 
         </div>
     </div>
@@ -282,7 +298,36 @@
             currentDate.setMonth(currentDate.getMonth() + step);
             renderCalendar();
         }
+        // Affiche/Cache le menu popup
+function toggleAdminMenu() {
+    const popup = document.getElementById('adminPopup');
+    popup.style.display = popup.style.display === 'none' ? 'flex' : 'none';
+}
 
+// Fonction pour le menu Test
+async function ajouterJetonsTest() {
+    try {
+        const token = getToken();
+        const reponse = await fetch('http://localhost:3000/api/profile/test-coins', {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (reponse.ok) {
+            alert('⚙️ 100 jetons ajoutés avec succès !');
+            window.location.reload(); // Recharge pour afficher les nouveaux jetons
+        }
+    } catch (e) {
+        console.error('Erreur test coins:', e);
+    }
+}
+
+// Vérifier si l'utilisateur est admin au chargement
+document.addEventListener("DOMContentLoaded", () => {
+    const user = getCurrentUser();
+    if (user && user.role === 'admin') {
+        document.getElementById('btnAdminMenu').style.display = 'inline-block';
+    }
+});
         init();
     </script>
 
