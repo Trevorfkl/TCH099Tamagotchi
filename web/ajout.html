@@ -72,7 +72,15 @@
 
         if (!requireAuth()) {}
 
-        document.getElementById('date_limite').value = new Date().toISOString().split('T')[0];
+        // On vérifie s'il y a une date envoyée par le calendrier
+        const parametresUrl = new URLSearchParams(window.location.search);
+        const dateCalendrier = parametresUrl.get('date');
+            
+        if (dateCalendrier) {
+            document.getElementById('date_limite').value = dateCalendrier;
+        } else {
+            document.getElementById('date_limite').value = new Date().toISOString().split('T')[0];
+        }
 
         // 1. GESTION DES PRÉFÉRENCES D'ICÔNES DYNAMIQUES
         let mesPreferences = {
@@ -125,7 +133,7 @@
 
             try {
                 // On envoie enfin l'icone personnalisée au serveur !
-                await apiCreerTache(titre, type, date, icone);
+                await apiCreerTache(titre, type, date, icone, '');
                 window.location.href = 'dashboard.html';
             } catch (err) {
                 errorMsg.style.display = 'block';

@@ -73,7 +73,7 @@
             <!-- Buttons -->
              
             <div class="btn-container" style="margin-top:8px;">
-                <a href="ajout.html" class="btn btn-primary">🌱 Ajouter une activité</a>
+                <button onclick="window.location.href = 'ajout.html?date=' + selectedDate" class="btn btn-primary">🌱 Ajouter une activité</button>
                 <a href="leaderboard.html" class="btn btn-secondary">🏆 Classement</a>
                 <a href="profile.html" class="btn btn-secondary">👤 Mon profil</a>
                 <a href="shop.html" class="btn btn-secondary">🛒 Boutique</a>
@@ -140,9 +140,11 @@
         function getPlantForDay(taches) {
             if (!taches.length) return { emoji:'', label:'' };
             if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
-            if (taches.some(t => t.type === 'examen')) return { emoji:'🌸', label:'' };
-            if (taches.some(t => t.type === 'tp' || t.type === 'devoir')) return { emoji:'🪴', label:'' };
-            return { emoji:'🌱', label:'' };
+            
+            // On prend la tâche la plus importante de la journée (pas encore complétée)
+            const tacheActive = taches.find(t => !t.completee) || taches[0];
+            // On affiche sa belle icône personnalisée !
+            return { emoji: tacheActive.icone || '🌱', label:'' };
         }
 
         function renderCalendar() {
@@ -206,8 +208,11 @@
                 const checkSymbol = task.completee ? '✓' : '';
                 const checkClass  = task.completee ? 'checkbox checked' : 'checkbox';
                 const textClass   = task.completee ? 'task-text completed' : 'task-text';
-                const typeEmoji   = { etude:'🌱', examen:'🌸', tp:'🪴', devoir:'🪴' }[task.type] || '📚';
-                const typeLabel   = { etude:'Étude', examen:'Examen', tp:'TP', devoir:'Devoir' }[task.type] || 'Activité';
+                
+                // NOUVEAU : On utilise directement l'icône de la tâche !
+                const typeEmoji   = task.icone || '🌱'; 
+                
+                const typeLabel   = { etude:'Étude', examen:'Examen', tp:'TP', devoir:'Devoir', projet:'Projet' }[task.type] || 'Activité';
 
                 const div = document.createElement('div');
                 div.className = 'task-item';

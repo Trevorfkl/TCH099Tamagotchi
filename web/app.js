@@ -80,7 +80,8 @@ async function apiGetTaches() {
         type:     t.type,
         date:     t.date_limite ? new Date(t.date_limite).toISOString().split('T')[0] : null,
         completee: t.statut === 'completee',
-        description: t.description
+        description: t.description,
+        icone:    t.icone
     }));
 }
 
@@ -88,32 +89,43 @@ async function apiGetTachesAujourdhui() {
     const reponse = await fetch(`${API_URL}/tasks/today`, { headers: authHeaders() });
     if (!reponse.ok) return [];
     const data = await reponse.json();
-    return data.taches || [];
+    const taches = data.taches || [];
+
+    return taches.map(t => ({
+        id:       t.id,
+        nom:      t.titre,
+        type:     t.type,
+        date:     t.date_limite ? new Date(t.date_limite).toISOString().split('T')[0] : null,
+        completee: t.statut === 'completee',
+        description: t.description,
+        icone:    t.icone // L'icône est maintenant conservée !
+    }));
 }
 
 async function apiGetTachesParDate(date) {
     const reponse = await fetch(`${API_URL}/tasks/date/${date}`, { headers: authHeaders() });
     if (!reponse.ok) return [];
     const data = await reponse.json();
-    return data.taches || [];
+    const taches = data.taches || [];
+
+    return taches.map(t => ({
+        id:       t.id,
+        nom:      t.titre,
+        type:     t.type,
+        date:     t.date_limite ? new Date(t.date_limite).toISOString().split('T')[0] : null,
+        completee: t.statut === 'completee',
+        description: t.description,
+        icone:    t.icone  // L'icône est maintenant conservée !
+    }));
 }
 
-async function apiCreerTache(titre, type, dateLimite, description) {
+
+async function apiCreerTache(titre, type, dateLimite, icone, description = '') {
     const reponse = await fetch(`${API_URL}/tasks`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ titre, type, dateLimite, description })
-    });
-    const data = await reponse.json();
-    if (!reponse.ok) throw new Error(data.message);
-    return data;
-}
-
-async function apiModifierTache(id, titre, type, dateLimite, statut, description) {
-    const reponse = await fetch(`${API_URL}/tasks/${id}`, {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify({ titre, type, dateLimite, statut, description })
+        // On envoie bien l'icone ET la description au serveur !
+        body: JSON.stringify({ titre, type, dateLimite, icone, description }) 
     });
     const data = await reponse.json();
     if (!reponse.ok) throw new Error(data.message);

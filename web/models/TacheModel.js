@@ -25,10 +25,13 @@ class TacheModel {
         return rows[0] || null;
     }
 
-    static async creer(titre, date_limite, id_utilisateur, id_case_jardin, description, type) {
+    // Ajoute 'icone' à la fin des paramètres
+    static async creer(titre, date_limite, id_utilisateur, id_case_jardin, description, type, icone) {
+        
+        // NOUVEAU : Ajoute 'icone' dans les colonnes, un '?' supplémentaire, et la variable à la fin du tableau
         const [result] = await db.execute(
-            'INSERT INTO Tache (titre, date_limite, id_utilisateur, id_case_jardin, description, type) VALUES (?, ?, ?, ?, ?, ?)',
-            [titre, date_limite, id_utilisateur, id_case_jardin, description || null, type || 'etude']
+            'INSERT INTO Tache (titre, date_limite, id_utilisateur, id_case_jardin, description, type, icone) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [titre, date_limite, id_utilisateur, id_case_jardin, description, type, icone || '🌱']
         );
         return result.insertId;
     }
@@ -47,6 +50,8 @@ class TacheModel {
         );
         return result.affectedRows;
     }
+
+    
 }
 
 module.exports = TacheModel;

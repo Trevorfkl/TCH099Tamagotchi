@@ -54,6 +54,7 @@ CREATE TABLE CaseJardin (
 );
 
 -- Table 4: Tache
+-- Table 4: Tache
 CREATE TABLE Tache (
   id INT PRIMARY KEY AUTO_INCREMENT,
   titre VARCHAR(150) NOT NULL,
@@ -64,6 +65,10 @@ CREATE TABLE Tache (
   type ENUM('etude', 'travail', 'sante', 'personnel', 'projet', 'tp', 'devoir', 'examen') DEFAULT 'etude',
   id_utilisateur INT NOT NULL,
   id_case_jardin INT,
+  
+  -- NOUVEAU : Icône personnalisée pour la tâche
+  icone VARCHAR(255) DEFAULT '🌱',
+  
   FOREIGN KEY (id_utilisateur) REFERENCES Utilisateur(id) ON DELETE CASCADE,
   FOREIGN KEY (id_case_jardin) REFERENCES CaseJardin(id) ON DELETE SET NULL
 );
