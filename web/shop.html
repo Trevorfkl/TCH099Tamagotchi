@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growchi - Boutique 🛒</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .shop-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid #5a8a6a; background: white; color: #5a8a6a; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { background: #5a8a6a; color: white; }
+        
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .shop-item { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; border: 2px solid transparent; }
+        .shop-item:hover { transform: translateY(-3px); border-color: #5a8a6a; }
+        
+        .item-icon { font-size: 40px; margin-bottom: 10px; }
+        .item-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .item-price { color: #f57c00; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+        
+        .shop-item.locked { opacity: 0.7; filter: grayscale(100%); border-color: #ccc; }
+        .locked-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #d32f2f; color: white; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: bold; white-space: nowrap; }
+    </style>
+</head>
+<body class="season-summer">
+
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:700px; margin-top:30px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>🛒 La Boutique</h2>
+                <div class="coins-badge" id="coinsBox">💰 0 coins</div>
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour</a>
+            </div>
+
+            <div class="shop-tabs">
+                <button id="btn-plante" class="tab-btn active" onclick="filtrerShop('plante')">🌱 Plantes</button>
+                <button id="btn-theme" class="tab-btn" onclick="filtrerShop('theme')">🎨 Thèmes</button>
+                <button id="btn-icone_profil" class="tab-btn" onclick="filtrerShop('icone_profil')">👤 Icônes</button>
+            </div>
+
+            <div class="shop-grid" id="shopGrid">
+                <p style="text-align: center; width: 100%;">Chargement de la boutique...</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+<script>
+    if (!requireAuth()) {}
+
+    let tousLesArticles = [];
+
+    async function initShop() {
+        try {
+            // 1. Charger les jetons EXACTS depuis la base de données
+            const profil = await apiGetProfil();
+            if (profil) {
+                document.getElementById('coinsBox').textContent = '💰 ' + profil.coins + ' coins';
+                // Mettre à jour le navigateur pour que le dashboard ait aussi les nouveaux coins
+                const userLocal = getCurrentUser();
+                if(userLocal) setCurrentUser({...userLocal, coins: profil.coins});
+            }
+            
+            // 2. Charger les articles (qui savent maintenant si on les possède !)
+            const token = getToken();
+            const reponse = await fetch('http://localhost:3000/api/boutique', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await reponse.json();
+            tousLesArticles = data.items || [];
+            
+            // 3. Rafraîchir l'affichage de l'onglet actuel
+            const ongletActif = document.querySelector('.tab-btn.active') ? document.querySelector('.tab-btn.active').id.replace('btn-', '') : 'plante';
+            filtrerShop(ongletActif);
+
+        } catch (e) {
+            console.error("Erreur de chargement", e);
+            document.getElementById('shopGrid').innerHTML = '<p>Erreur de connexion au serveur.</p>';
+        }
+    }
+
+    function filtrerShop(categorie) {
+        // Gérer les onglets
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        const btnActif = document.getElementById('btn-' + categorie);
+        if(btnActif) btnActif.classList.add('active');
+
+        const grid = document.getElementById('shopGrid');
+        grid.innerHTML = '';
+        
+        const articlesFiltres = tousLesArticles.filter(a => a.type === categorie);
+
+        if(articlesFiltres.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1 / -1;">Aucun article dans cette catégorie pour le moment !</p>';
+            return;
+        }
+
+        articlesFiltres.forEach(item => {
+            // Vérifier si MySQL a dit qu'on le possède (1 = vrai, 0 = faux)
+            const possede = Number(item.possede) === 1 || item.possede === true || item.possede === "1";
+            
+            let boutonHTML = '';
+            if (possede) {
+                boutonHTML = `<button class="btn btn-secondary" style="padding: 6px; font-size: 12px; width: 100%; background-color:#e0e0e0; color:#888; border-color:#ccc; cursor:not-allowed;" disabled>✅ Vendu</button>`;
+            } else {
+                boutonHTML = `<button class="btn btn-primary" style="padding: 6px; font-size: 12px; width: 100%;" onclick="acheterArticle(${item.id})">Acheter</button>`;
+            }
+
+            grid.innerHTML += `
+                <div class="shop-item">
+                    <div class="item-icon">${item.image_url}</div>
+                    <div class="item-name">${item.nom}</div>
+                    <div class="item-price">💰 ${item.prix_coins}</div>
+                    ${boutonHTML}
+                </div>
+            `;
+        });
+    }
+
+    async function acheterArticle(idArticle) {
+        try {
+            const token = getToken();
+            const reponse = await fetch(`http://localhost:3000/api/boutique/${idArticle}/acheter`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await reponse.json();
+            
+            if (reponse.ok) {
+                // Au lieu d'une grosse alerte, on recharge les données ! 
+                // L'argent va baisser en haut à droite, et le bouton va devenir "Vendu" !
+                initShop(); 
+            } else {
+                alert('❌ ' + data.message); // Affiche "Fonds insuffisants"
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erreur de connexion lors de l'achat.");
+        }
+    }
+
+    // Démarrer la page
+    initShop();
+</script>
+</body>
+</html>

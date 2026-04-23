@@ -71,11 +71,27 @@
             </div>
 
             <!-- Buttons -->
+             
             <div class="btn-container" style="margin-top:8px;">
-                <a href="ajout.html" class="btn btn-primary">🌱 Ajouter une activité</a>
+                <button onclick="window.location.href = 'ajout.html?date=' + selectedDate" class="btn btn-primary">🌱 Ajouter une activité</button>
+                <a href="leaderboard.html" class="btn btn-secondary">🏆 Classement</a>
                 <a href="profile.html" class="btn btn-secondary">👤 Mon profil</a>
-                <button type="button" class="btn btn-secondary" onclick="logout()" style="background:rgba(255,100,100,0.15); color:#c62828; border-color:rgba(255,100,100,0.3);">🚪 Déconnexion</button>
-            </div>
+                <a href="shop.html" class="btn btn-secondary">🛒 Boutique</a>
+    
+            <div style="position:relative; display:inline-block;">
+                <button type="button" class="btn btn-secondary" id="btnAdminMenu" onclick="toggleAdminMenu()" style="display:none; padding: 10px 15px;">⚙️</button>
+        
+            <div id="adminPopup" class="admin-popup" style="display:none;">
+                <a href="admin_users.html">👥 Liste des utilisateurs</a>
+                <a href="admin_shop.html">🛒++ Liste du shop</a>
+            <button onclick="ajouterJetonsTest()">💰 Test: +100 Coins</button>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="logout()" style="background:rgba(255,100,100,0.15); color:#c62828; border-color:rgba(255,100,100,0.3);">🚪 Déconnexion</button>
+</div>
+
+            
 
         </div>
     </div>
@@ -95,15 +111,28 @@
         let selectedDate = new Date().toISOString().split('T')[0];
         let allTaches    = [];
 
+        function formaterIcone(icone) {
+            if (!icone) return ''; 
+            if (icone.includes('.png') || icone.includes('.jpg') || icone.includes('.gif') || icone.includes('.webp')) {
+                return `<img src="images/${icone}" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle;" alt="plante">`;
+            }
+            return icone; 
+        }
         async function init() {
             try {
-                const user = getCurrentUser();
-                if (user) {
-                    document.getElementById('welcomeText').textContent = 'Bonjour, ' + user.prenom + ' ! 👋';
-                    document.getElementById('coinsBox').textContent = '💰 ' + (user.coins || 0) + ' coins';
-                }
                 document.getElementById('seasonText').textContent = seasonNames[currentSeason];
-                allTaches = await apiGetTaches();
+
+                // Charger profil frais depuis l'API pour avoir les vrais coins
+                const [profil, taches] = await Promise.all([apiGetProfil(), apiGetTaches()]);
+
+                document.getElementById('welcomeText').textContent = 'Bonjour, ' + profil.prenom + ' ! 👋';
+                document.getElementById('coinsBox').textContent = '💰 ' + (profil.coins || 0) + ' coins';
+
+                // Mettre à jour le localStorage avec les données fraîches
+                const user = getCurrentUser();
+                if (user) setCurrentUser({ ...user, ...profil });
+
+                allTaches = taches;
                 renderCalendar();
                 renderTasks();
             } catch (err) { console.error(err); }
@@ -118,9 +147,11 @@
         function getPlantForDay(taches) {
             if (!taches.length) return { emoji:'', label:'' };
             if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
-            if (taches.some(t => t.type === 'examen')) return { emoji:'🌸', label:'' };
-            if (taches.some(t => t.type === 'tp' || t.type === 'devoir')) return { emoji:'🪴', label:'' };
-            return { emoji:'🌱', label:'' };
+            
+            // On prend la tâche la plus importante de la journée (pas encore complétée)
+            const tacheActive = taches.find(t => !t.completee) || taches[0];
+            // On affiche sa belle icône personnalisée !
+            return { emoji: tacheActive.icone || '🌱', label:'' };
         }
 
         function renderCalendar() {
@@ -165,7 +196,7 @@
                 cell.onclick = () => { selectedDate = dateStr; renderCalendar(); renderTasks(); };
                 cell.innerHTML = `
                     <div class="calendar-day-number">${day}</div>
-                    <div class="calendar-plant">${plant.emoji}</div>
+                    <div class="calendar-plant">${formaterIcone(plant.emoji)}</div>
                 `;
                 grid.appendChild(cell);
             }
@@ -184,15 +215,18 @@
                 const checkSymbol = task.completee ? '✓' : '';
                 const checkClass  = task.completee ? 'checkbox checked' : 'checkbox';
                 const textClass   = task.completee ? 'task-text completed' : 'task-text';
-                const typeEmoji   = { etude:'🌱', examen:'🌸', tp:'🪴', devoir:'🪴' }[task.type] || '📚';
-                const typeLabel   = { etude:'Étude', examen:'Examen', tp:'TP', devoir:'Devoir' }[task.type] || 'Activité';
+                
+                // NOUVEAU : On utilise directement l'icône de la tâche !
+                const typeEmoji   = task.icone || '🌱'; 
+                
+                const typeLabel   = { etude:'Étude', examen:'Examen', tp:'TP', devoir:'Devoir', projet:'Projet' }[task.type] || 'Activité';
 
                 const div = document.createElement('div');
                 div.className = 'task-item';
                 div.innerHTML = `
-                    <div class="${checkClass}" onclick="toggleTask(${task.id})">${checkSymbol}</div>
+                    <div class="${checkClass}" onclick="toggleTask(${task.id}, ${task.completee})">${checkSymbol}</div>
                     <div style="flex:1;">
-                        <div class="${textClass}">${typeEmoji} ${task.nom}</div>
+                        <div class="${textClass}">${formaterIcone(typeEmoji)} ${task.nom}</div>
                         <div class="task-date">${typeLabel} • ${task.date}</div>
                         <div class="task-actions">
                             <button onclick="goToEdit(${task.id})" class="action-btn action-btn-edit">✏️ Modifier</button>
@@ -226,18 +260,23 @@
             }
         }
 
-        async function toggleTask(id) {
+        async function toggleTask(id, estCompletee) {
             try {
-                const result = await apiCompleterTache(id);
+                const statutActuel = estCompletee ? 'completee' : 'en_attente';
+                const result = await apiCompleterTache(id, statutActuel);
                 allTaches = allTaches.map(t => t.id === id ? { ...t, completee: result.completee } : t);
-                if (result.coins !== null) {
+
+                // Recharger le profil pour avoir les coins à jour
+                try {
+                    const profil = await apiGetProfil();
                     const user = getCurrentUser();
                     if (user) {
-                        user.coins = result.coins;
+                        user.coins = profil.coins;
                         setCurrentUser(user);
-                        document.getElementById('coinsBox').textContent = '💰 ' + result.coins + ' coins';
                     }
-                }
+                    document.getElementById('coinsBox').textContent = '💰 ' + profil.coins + ' coins';
+                } catch (e) { /* ignore */ }
+
                 renderCalendar();
                 renderTasks();
             } catch (err) { alert('Erreur : ' + err.message); }
@@ -248,6 +287,15 @@
             try {
                 await apiSupprimerTache(id);
                 allTaches = allTaches.filter(t => t.id !== id);
+
+                // Recharger les coins (la suppression d'une tâche complétée retire des coins)
+                try {
+                    const profil = await apiGetProfil();
+                    const user = getCurrentUser();
+                    if (user) { user.coins = profil.coins; setCurrentUser(user); }
+                    document.getElementById('coinsBox').textContent = '💰 ' + profil.coins + ' coins';
+                } catch (e) { /* ignore */ }
+
                 renderCalendar();
                 renderTasks();
             } catch (err) { alert('Erreur : ' + err.message); }
@@ -262,7 +310,36 @@
             currentDate.setMonth(currentDate.getMonth() + step);
             renderCalendar();
         }
+        // Affiche/Cache le menu popup
+function toggleAdminMenu() {
+    const popup = document.getElementById('adminPopup');
+    popup.style.display = popup.style.display === 'none' ? 'flex' : 'none';
+}
 
+// Fonction pour le menu Test
+async function ajouterJetonsTest() {
+    try {
+        const token = getToken();
+        const reponse = await fetch('http://localhost:3000/api/profile/test-coins', {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (reponse.ok) {
+            alert('⚙️ 100 jetons ajoutés avec succès !');
+            window.location.reload(); // Recharge pour afficher les nouveaux jetons
+        }
+    } catch (e) {
+        console.error('Erreur test coins:', e);
+    }
+}
+
+// Vérifier si l'utilisateur est admin au chargement
+document.addEventListener("DOMContentLoaded", () => {
+    const user = getCurrentUser();
+    if (user && user.role === 'admin') {
+        document.getElementById('btnAdminMenu').style.display = 'inline-block';
+    }
+});
         init();
     </script>
 

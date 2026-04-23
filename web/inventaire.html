@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growchi - Mon Inventaire 🎒</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+        
+        .inventory-item { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px 10px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            border: 2px solid #e0e0e0; 
+            cursor: help; /* Change le curseur en point d'interrogation pour indiquer qu'on peut survoler */
+            transition: transform 0.2s, border-color 0.2s; 
+        }
+        .inventory-item:hover { transform: translateY(-5px); border-color: #5a8a6a; }
+        
+        .item-icon { font-size: 50px; margin-bottom: 10px; }
+        .item-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #333; }
+        .item-type { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: bold; display: inline-block; margin-top: 5px;}
+        
+        /* Couleurs personnalisées pour les badges de type */
+        .type-plante { background: #e8f5e9; color: #2e7d32; }
+        .type-theme { background: #e3f2fd; color: #1565c0; }
+        .type-icone { background: #fff3e0; color: #e65100; }
+    </style>
+</head>
+<body class="season-spring">
+
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:800px; margin-top:30px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2>🎒 Mon Inventaire</h2>
+                <a href="profile.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour au profil</a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                <i>💡 Laisse ta souris sur un objet pour voir quand tu l'as acheté !</i>
+            </p>
+
+            <div class="inventory-grid" id="inventoryGrid">
+                <p style="grid-column: 1 / -1; text-align: center;">Recherche dans le sac à dos... 🎒</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Sécurité : vérifier si l'utilisateur est connecté
+        if (!requireAuth()) {}
+
+        async function chargerInventaire() {
+            const grid = document.getElementById('inventoryGrid');
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/boutique/inventaire', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await reponse.json();
+                grid.innerHTML = '';
+
+                // Si l'inventaire est vide
+                if (!data.inventaire || data.inventaire.length === 0) {
+                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#888;">Ton inventaire est vide. Va accomplir des tâches et visite la <a href="shop.html" style="color:#5a8a6a;">boutique</a> !</p>';
+                    return;
+                }
+
+                // Afficher chaque objet
+                data.inventaire.forEach(item => {
+                    // Transformer la date moche (2026-04-13T12:00:00Z) en belle date (13 avril 2026)
+                    const dateAchat = new Date(item.date_achat).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    
+                    // Appliquer la bonne couleur selon la catégorie
+                    let classBadge = 'type-icone';
+                    let texteType = 'ICÔNE';
+                    if (item.type === 'plante') { classBadge = 'type-plante'; texteType = 'PLANTE'; }
+                    if (item.type === 'theme') { classBadge = 'type-theme'; texteType = 'THÈME'; }
+
+                    // Générer le HTML avec l'attribut title="..." pour le survol
+                    grid.innerHTML += `
+                        <div class="inventory-item" title="Date d'achat : ${dateAchat}">
+                            <div class="item-icon">${item.image_url}</div>
+                            <div class="item-name">${item.nom}</div>
+                            <span class="item-type ${classBadge}">${texteType}</span>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error("Erreur d'inventaire:", e);
+                grid.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Erreur de connexion au serveur.</p>';
+            }
+        }
+
+        // Lancer la fonction au chargement de la page
+        chargerInventaire();
+    </script>
+</body>
+</html>

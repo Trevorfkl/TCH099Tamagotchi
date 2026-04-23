@@ -57,6 +57,47 @@ body {
     100% { transform: translateX(30px); }
 }
 
+
+/* Style du popup Admin */
+.admin-popup {
+    position: absolute;
+    bottom: 120%; /* Le fait flotter au-dessus du bouton */
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    flex-direction: column;
+    min-width: 220px;
+    z-index: 100;
+    overflow: hidden;
+    border: 2px solid #5a8a6a;
+}
+
+.admin-popup a, .admin-popup button {
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #333;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+}
+
+.admin-popup a:hover, .admin-popup button:hover {
+    background: #f0f7f2;
+    color: #5a8a6a;
+    font-weight: bold;
+}
+
+.admin-popup a:last-child, .admin-popup button:last-child {
+    border-bottom: none;
+}
+
 /* Pixel grass/ground */
 .garden-bg::after {
     content: '';
@@ -727,3 +768,4 @@ textarea { min-height: 100px; resize: vertical; }
     h1 { font-size: 10px; }
     .btn { font-size: 8px; padding: 12px; }
 }
+

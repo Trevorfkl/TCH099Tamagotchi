@@ -49,14 +49,46 @@
                     </div>
                 </div>
             </div>
+<div style="text-align: center; margin: 30px 0; padding: 15px; background: rgba(90, 138, 106, 0.05); border-radius: 12px; border: 1px dashed #5a8a6a;">
+        <p style="margin-top: 0; margin-bottom: 10px; font-weight: bold; color: #5a8a6a;">Mes récompenses et achats</p>
+        <button type="button" class="btn btn-primary" onclick="ouvrirInventaire()" style="padding: 10px 25px; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            🎒 Ouvrir mon Inventaire
+        </button>
+    </div>
+<!--### 2. Ajouter la structure du Popup (Modal)
+Copie ce bloc et colle-le **tout en bas de ton HTML**, juste avant la balise `<script src="app.js"></script>` :
 
+```html-->
+    <div id="fondModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;" onclick="fermerInventaire()"></div>
+    
+    <div id="modalInventaire" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:25px; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:1000; width:90%; max-width:650px; max-height:80vh; overflow-y:auto; border:3px solid #5a8a6a;">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <h2 style="margin:0;">🎒 Mon Inventaire</h2>
+            <button type="button" onclick="fermerInventaire()" class="btn btn-secondary" style="padding:5px 12px; background:rgba(255,100,100,0.1); color:#c62828; border:none; font-weight:bold;">✕ Fermer</button>
+        </div>
+        
+        <p style="color: #666; font-size: 13px; margin-bottom: 20px; text-align: center;">
+            <i>💡 Laisse ta souris sur un objet pour voir quand tu l'as acheté !</i>
+        </p>
+
+        <div id="grilleInventaire" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:15px;">
+            </div>
+    </div>
+    
+
+<!--**Ce que ce code fait :**
+* `text-align: center;` s'assure que le bouton est parfaitement au milieu de la page.
+* `margin: 30px 0;` crée un bel espace en haut et en bas pour qu'il ne soit pas collé sur tes statistiques ou sur le formulaire.
+* J'ai ajouté une petite boîte avec une bordure pointillée (`border: 1px dashed #5a8a6a;`) et un petit titre ("Mes récompenses et achats") pour que ça ressemble vraiment à une section de ton application et que ça mette le bouton en valeur !
+
+Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement à ton design !-->
             <!-- Account info -->
             <div class="card-section">
                 <h2 style="margin-bottom:14px;">👤 Informations du compte</h2>
                 <div class="info-line">🧑 <strong>Prénom :</strong> <span id="displayFirstName">-</span></div>
                 <div class="info-line">📛 <strong>Nom :</strong> <span id="displayLastName">-</span></div>
                 <div class="info-line">📧 <strong>Courriel :</strong> <span id="displayEmail">-</span></div>
-                <div class="info-line">📞 <strong>Téléphone :</strong> <span id="displayPhone">-</span></div>
             </div>
 
             <!-- Edit profile -->
@@ -72,11 +104,6 @@
                         <label for="lastName">Nom</label>
                         <input type="text" id="lastName" required>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">📞 Téléphone</label>
-                    <input type="tel" id="phone" placeholder="123 456-7890">
                 </div>
 
                 <div class="form-group">
@@ -105,7 +132,24 @@
 
         </div>
     </div>
-
+    <div id="modalChoixTache" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:1005; width:90%; max-width:400px; border:2px solid #5a8a6a;">
+        <h3 style="margin-top:0;">Associer cette plante 🌱</h3>
+        <p style="font-size:13px; color:#666;">Toutes tes tâches de cette catégorie utiliseront cette icône.</p>
+        
+        <select id="selectTypeTache" class="form-control" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px;">
+            <option value="etude">Étude</option>
+            <option value="devoir">Devoir</option>
+            <option value="tp">TP</option>
+            <option value="examen">Examen</option>
+            <option value="projet">Projet</option>
+        </select>
+        <input type="hidden" id="planteSecreteAEquiper">
+        
+        <div style="display:flex; justify-content:space-between;">
+            <button class="btn btn-secondary" onclick="document.getElementById('modalChoixTache').style.display='none'">Annuler</button>
+            <button class="btn btn-primary" onclick="validerEquipementPlante()">Sauvegarder</button>
+        </div>
+    </div>
     <script src="app.js"></script>
     <script>
         const month = new Date().getMonth();
@@ -132,27 +176,25 @@
 
         async function loadProfile() {
             try {
-                const data = await apiGetProfil();
+                const [data, stats] = await Promise.all([apiGetProfil(), apiGetStats()]);
 
                 document.getElementById('profileFullName').textContent  = data.prenom + ' ' + data.nom;
-                document.getElementById('profileEmail').textContent     = data.email || '-';
-                document.getElementById('profileBio').textContent       = data.bio || '';
-                document.getElementById('displayFirstName').textContent = data.prenom || '-';
-                document.getElementById('displayLastName').textContent  = data.nom    || '-';
-                document.getElementById('displayEmail').textContent     = data.email  || '-';
-                document.getElementById('displayPhone').textContent     = data.telephone || '-';
+                document.getElementById('profileEmail').textContent     = data.courriel || '-';
+                document.getElementById('profileBio').textContent       = data.biographie || '';
+                document.getElementById('displayFirstName').textContent = data.prenom   || '-';
+                document.getElementById('displayLastName').textContent  = data.nom      || '-';
+                document.getElementById('displayEmail').textContent     = data.courriel || '-';
 
-                document.getElementById('firstName').value = data.prenom    || '';
-                document.getElementById('lastName').value  = data.nom       || '';
-                document.getElementById('phone').value     = data.telephone || '';
-                document.getElementById('bio').value       = data.bio       || '';
+                document.getElementById('firstName').value = data.prenom      || '';
+                document.getElementById('lastName').value  = data.nom         || '';
+                document.getElementById('bio').value       = data.biographie  || '';
 
-                document.getElementById('statCoins').textContent     = data.coins;
-                document.getElementById('statTasks').textContent     = data.stats.total;
-                document.getElementById('statCompleted').textContent = data.stats.completees;
-                document.getElementById('statProgress').textContent  = data.stats.progression + '%';
+                document.getElementById('statCoins').textContent     = data.coins || 0;
+                document.getElementById('statTasks').textContent     = stats.totalTaches || 0;
+                document.getElementById('statCompleted').textContent = stats.tachesCompletees || 0;
+                document.getElementById('statProgress').textContent  = (stats.pourcentageCompletion || 0) + '%';
 
-                selectedColor = data.couleur || '#4a8a55';
+                selectedColor = data.couleur_profil || '#4a8a55';
                 const avatar = document.getElementById('profileAvatar');
                 avatar.style.background = selectedColor;
                 avatar.textContent = data.prenom ? data.prenom.charAt(0).toUpperCase() : '?';
@@ -163,12 +205,11 @@
         }
 
         document.getElementById('btnSave').addEventListener('click', async function () {
-            const prenom    = document.getElementById('firstName').value.trim();
-            const nom       = document.getElementById('lastName').value.trim();
-            const telephone = document.getElementById('phone').value.trim();
-            const bio       = document.getElementById('bio').value.trim();
-            const errorMsg  = document.getElementById('errorMessage');
-            const saveMsg   = document.getElementById('saveMessage');
+            const prenom   = document.getElementById('firstName').value.trim();
+            const nom      = document.getElementById('lastName').value.trim();
+            const bio      = document.getElementById('bio').value.trim();
+            const errorMsg = document.getElementById('errorMessage');
+            const saveMsg  = document.getElementById('saveMessage');
 
             if (!prenom || !nom) {
                 errorMsg.style.display = 'block';
@@ -181,7 +222,8 @@
             errorMsg.style.display = 'none';
 
             try {
-                await apiUpdateProfil(prenom, nom, telephone, bio, selectedColor);
+                await apiUpdateProfil(prenom, nom, bio);
+                await apiUpdateCouleur(selectedColor);
                 await loadProfile();
                 saveMsg.style.display = 'block';
                 setTimeout(() => saveMsg.style.display = 'none', 2500);
@@ -195,6 +237,130 @@
         });
 
         loadProfile();
+        // Ouvrir le popup et charger les items
+        async function ouvrirInventaire() {
+            document.getElementById('fondModal').style.display = 'block';
+            document.getElementById('modalInventaire').style.display = 'block';
+            const grille = document.getElementById('grilleInventaire');
+            grille.innerHTML = '<p style="grid-column: 1 / -1; text-align:center;">Fouille dans le sac à dos... 🎒</p>';
+
+            try {
+                // 1. On va chercher le profil pour savoir ce qui est déjà actif
+                const profil = await apiGetProfil();
+                const iconeActuelle = profil.icone_profil;
+
+                // 2. On va chercher l'inventaire
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/boutique/inventaire', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await reponse.json();
+                grille.innerHTML = '';
+
+                if (!data.inventaire || data.inventaire.length === 0) {
+                    grille.innerHTML = '<p style="grid-column: 1 / -1; text-align:center;">Ton inventaire est vide.</p>';
+                    return;
+                }
+
+                data.inventaire.forEach(item => {
+                    const dateAchat = new Date(item.date_achat).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    
+                    let bgCouleur = '#eee'; let txtCouleur = '#333';
+                    let renduVisuel = '';
+                    let boutonAction = '';
+
+                    // === LOGIQUE SELON LE TYPE ===
+                    if (item.type === 'icone_profil') {
+                        bgCouleur = '#fff3e0'; txtCouleur = '#e65100';
+                        renduVisuel = `<img src="images/${item.image_url}" style="max-width:50px; max-height:50px; object-fit:contain;">`;
+                        
+                        // VÉRIFICATION DE L'ÉTAT ACTIF
+                        if (item.image_url === iconeActuelle) {
+                            boutonAction = `<button disabled class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; background:#e0e0e0; color:#888; border:none;">✅ Actif</button>`;
+                        } else {
+                            boutonAction = `<button onclick="equiperItem('icone_profil', '${item.image_url}')" class="btn btn-primary" style="margin-top:10px; width:100%; font-size:12px; padding:4px;">Équiper</button>`;
+                        }
+                    
+                    } else if (item.type === 'plante') {
+                        bgCouleur = '#e8f5e9'; txtCouleur = '#2e7d32';
+                        renduVisuel = `<div style="font-size:40px;">${item.image_url}</div>`;
+                        boutonAction = `<button onclick="ouvrirChoixTache('${item.image_url}')" class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; border:1px solid #5a8a6a; color:#5a8a6a;">Sélectionner</button>`;
+                    
+                    } else if (item.type === 'theme') {
+                        bgCouleur = '#e3f2fd'; txtCouleur = '#1565c0';
+                        renduVisuel = `<div style="font-size:40px;">🎨</div>`;
+                        boutonAction = `<button disabled class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px;">Bientôt</button>`;
+                    }
+
+                    // On ajoute "title" pour l'effet hover de la date d'achat
+                    grille.innerHTML += `
+                        <div title="Acheté le : ${dateAchat}" style="background:#fafafa; border:2px solid #e0e0e0; border-radius:12px; padding:15px 10px; text-align:center; cursor:help;">
+                            <div style="margin-bottom:8px; height:50px; display:flex; align-items:center; justify-content:center;">
+                                ${renduVisuel}
+                            </div>
+                            <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${item.nom}</div>
+                            <span style="background:${bgCouleur}; color:${txtCouleur}; font-size:10px; padding:4px 8px; border-radius:12px; font-weight:bold;">${item.type.toUpperCase()}</span>
+                            ${boutonAction}
+                        </div>
+                    `;
+                });
+            } catch (e) { console.error(e); }
+        }
+        function ouvrirChoixTache(emojiPlante) {
+            // Plus besoin de fetcher les tâches, on ouvre juste le menu !
+            document.getElementById('planteSecreteAEquiper').value = emojiPlante;
+            document.getElementById('modalChoixTache').style.display = 'block';
+        }
+
+        async function validerEquipementPlante() {
+            const typeSelectionne = document.getElementById('selectTypeTache').value;
+            const emojiPlante = document.getElementById('planteSecreteAEquiper').value;
+
+            try {
+                const token = getToken();
+                // On envoie la requête à notre nouvelle route
+                const reponse = await fetch(`http://localhost:3000/api/profile/taches-type/plante`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ type_tache: typeSelectionne, plante: emojiPlante })
+                });
+
+                if (reponse.ok) {
+                    alert('🌱 La plante a été associée à toutes les tâches de type : ' + typeSelectionne);
+                    document.getElementById('modalChoixTache').style.display = 'none';
+                    fermerInventaire();
+                } else {
+                    alert('Erreur lors de l\'association.');
+                }
+            } catch(e) { console.error(e); }
+        }
+        async function equiperItem(typeItem, imageUrl) {
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/profile/equiper', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ type: typeItem, image_url: imageUrl })
+                });
+
+                if (reponse.ok) {
+                    alert('✨ Équipement mis à jour !');
+                    fermerInventaire();
+                    window.location.reload(); 
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        // Fermer le popup
+        function fermerInventaire() {
+            document.getElementById('fondModal').style.display = 'none';
+            document.getElementById('modalInventaire').style.display = 'none';
+        }
+        
     </script>
 
 </body>

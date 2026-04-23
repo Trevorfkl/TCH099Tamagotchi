@@ -60,15 +60,21 @@
         document.body.className = 'season-' + seasons[month];
 
         document.getElementById('btnInscrire').addEventListener('click', async function () {
-            const prenom   = document.getElementById('firstName').value.trim();
-            const nom      = document.getElementById('lastName').value.trim();
-            const email    = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorMsg = document.getElementById('errorMessage');
+            const prenom     = document.getElementById('firstName').value.trim();
+            const nom        = document.getElementById('lastName').value.trim();
+            const courriel   = document.getElementById('email').value.trim();
+            const motDePasse = document.getElementById('password').value.trim();
+            const errorMsg   = document.getElementById('errorMessage');
 
-            if (!prenom || !nom || !email || !password) {
+            if (!prenom || !nom || !courriel || !motDePasse) {
                 errorMsg.style.display = 'block';
                 errorMsg.textContent = 'Tous les champs sont obligatoires.';
+                return;
+            }
+            
+            if (!courriel.includes('@')) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Veuillez entrer une adresse courriel valide (doit contenir un @).';
                 return;
             }
 
@@ -77,7 +83,7 @@
             errorMsg.style.display = 'none';
 
             try {
-                const data = await apiInscription(prenom, nom, email, password);
+                const data = await apiInscription(prenom, nom, courriel, motDePasse);
                 setToken(data.token);
                 setCurrentUser(data.utilisateur);
                 window.location.href = 'dashboard.html';

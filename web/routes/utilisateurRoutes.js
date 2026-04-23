@@ -1,10 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const utilisateurController = require('../controllers/utilisateurController');
+const AuthController = require('../controllers/utilisateurController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// Définition de la route POST
-router.post('/inscription', utilisateurController.inscrireUtilisateur);
-router.post('/connexion', utilisateurController.connecterUtilisateur);
-router.get('/utilisateurs/:id', utilisateurController.getProfil);
-router.put('/utilisateurs/:id', utilisateurController.modifierProfil);
+// POST /api/auth/register
+router.post('/register', (req, res) => AuthController.register(req, res));
+
+// POST /api/auth/login
+router.post('/login', (req, res) => AuthController.login(req, res));
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', (req, res) => AuthController.forgotPassword(req, res));
+
+router.get('/users', authMiddleware, (req, res) => AuthController.getAllUsers(req, res));
+router.put('/users/:id/role', authMiddleware, (req, res) => AuthController.updateUserRole(req, res));
+router.delete('/users/:id', authMiddleware, (req, res) => AuthController.deleteUser(req, res));
+router.put('/users/:id/coins', authMiddleware, (req, res) => AuthController.updateUserCoins(req, res));
+// Route Leaderboard (Accessible à tous les connectés)
+router.get('/leaderboard', authMiddleware, (req, res) => AuthController.getLeaderboard(req, res));
 module.exports = router;

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growchi - Panneau Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .admin-table th, .admin-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .admin-table th { background-color: #f0f7f2; color: #5a8a6a; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge.admin { background: #ffe0b2; color: #e65100; }
+        .badge.utilisateur { background: #e8f5e9; color: #2e7d32; }
+        .action-select { padding: 6px; border-radius: 6px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body class="season-summer">
+
+    <div class="page-wrapper">
+        <div class="app-container" style="max-width:800px; margin-top:30px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>⚙️ Gestion des utilisateurs</h2>
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour</a>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom complet</th>
+                        <th>Courriel</th>
+                        <th>Coins</th>
+                        <th style="text-align:center;">✅ Fini</th>
+                        <th style="text-align:center;">⏳ En cours</th>
+                        <th style="text-align:center;">📊 Total</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr><td colspan="6" style="text-align:center;">Chargement des utilisateurs...</td></tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Sécurité : Kick les non-admins
+        const currentUser = getCurrentUser();
+        if (!currentUser || currentUser.role !== 'admin') {
+            window.location.href = 'dashboard.html';
+        }
+
+        async function loadUsers() {
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/auth/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await reponse.json();
+                
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = '';
+
+                data.users.forEach(user => {
+                    const roleBadge = `<span class="badge ${user.role}">${user.role.toUpperCase()}</span>`;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${user.id}</td>
+                        <td>${user.prenom} ${user.nom}</td>
+                        <td>${user.courriel}</td>
+                        <td>💰 ${user.coins}</td>
+                        
+                        <td style="color:#2e7d32; font-weight:bold; text-align:center;">${user.taches_completees || 0}</td>
+                        <td style="color:#f57c00; font-weight:bold; text-align:center;">${user.taches_en_cours || 0}</td>
+                        <td style="color:#1565c0; font-weight:bold; text-align:center;">${user.total_taches || 0}</td>
+                        
+                        <td>${roleBadge}</td>
+                        <td>
+                            <select class="action-select" onchange="changerRole(${user.id}, this.value)">
+                                <option value="" disabled selected>Modifier rôle...</option>
+                                <option value="utilisateur">Rendre Utilisateur</option>
+                                <option value="admin">Rendre Admin</option>
+                            </select>
+                            <button class="action-btn" style="padding: 6px; background:#e3f2fd; color:#0d47a1; border:1px solid #90caf9;" onclick="modifierJetons(${user.id})">💰 Jetons</button>
+                            <button class="action-btn action-btn-delete" style="padding: 6px;" onclick="supprimerUser(${user.id})">🗑️ Ban</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (erreur) {
+                console.error("Erreur de chargement", erreur);
+            }
+        }
+
+        async function changerRole(id, nouveauRole) {
+            if(!confirm(`Changer le rôle pour ${nouveauRole} ?`)) return;
+            try {
+                const token = getToken();
+                await fetch(`http://localhost:3000/api/auth/users/${id}/role`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ role: nouveauRole })
+                });
+                loadUsers(); // Recharge le tableau
+            } catch (e) { alert('Erreur lors du changement de rôle'); }
+        }
+
+            async function modifierJetons(id) {
+        // Demande le montant avec une boîte de dialogue standard
+        const saisie = prompt("Entrez le montant à ajouter (ex: 50) ou à retirer avec un moins (ex: -50) :");
+            
+        // Si l'admin clique sur "Annuler" ou ne rentre rien
+        if (saisie === null || saisie.trim() === "") return;
+            
+        const montant = parseInt(saisie);
+        if (isNaN(montant)) {
+            alert("Veuillez entrer un nombre valide !");
+            return;
+        }
+    
+        try {
+            const token = getToken();
+            await fetch(`http://localhost:3000/api/auth/users/${id}/coins`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ montant: montant })
+            });
+            loadUsers(); // Recharge le tableau automatiquement pour voir le nouveau solde
+        } catch (e) { 
+            alert('Erreur lors de la modification des jetons'); 
+        }
+        }
+
+        async function supprimerUser(id) {
+            if(!confirm('🚨 Es-tu sûr de vouloir BANNIR/SUPPRIMER ce compte de façon permanente ?')) return;
+            try {
+                const token = getToken();
+                await fetch(`http://localhost:3000/api/auth/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadUsers(); // Recharge le tableau
+            } catch (e) { alert('Erreur lors de la suppression'); }
+        }
+
+        // Charger au démarrage
+        loadUsers();
+    </script>
+</body>
+</html>
