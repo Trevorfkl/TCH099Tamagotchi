@@ -41,9 +41,6 @@ class UtilisateurModel {
     // ==========================================
     // LEADERBOARD (Classement public)
     // ==========================================
-    // ==========================================
-    // LEADERBOARD (Classement public)
-    // ==========================================
     static async obtenirLeaderboard(periode, typeTache) {
         let conditionSQL = '';
         const params = []; // Tableau sécurisé pour les variables SQL

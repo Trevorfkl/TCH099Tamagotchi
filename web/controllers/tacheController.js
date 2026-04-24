@@ -44,21 +44,25 @@ class TacheController {
     }
 
     // POST /api/tasks
+    // POST /api/tasks
     static async creer(req, res) {
         try {
-            const { titre, dateLimite, idCaseJardin, description, type } = req.body;
+            // AJOUT DE 'icone' ICI :
+            const { titre, dateLimite, idCaseJardin, description, type, icone } = req.body;
 
             if (!titre) {
                 return res.status(400).json({ message: 'Le titre est requis' });
             }
 
+            // AJOUT DE 'icone' ICI À LA FIN :
             const idTache = await TacheModel.creer(
                 titre,
                 dateLimite || null,
                 req.userId,
                 idCaseJardin || null,
                 description,
-                type
+                type,
+                icone
             );
 
             // Lier la tâche à la case du jour correspondant
@@ -92,7 +96,6 @@ class TacheController {
             return res.status(500).json({ message: 'Erreur lors de la création' });
         }
     }
-
     // PUT /api/tasks/:id
     static async mettreAJour(req, res) {
         try {
@@ -149,6 +152,37 @@ class TacheController {
         } catch (e) {
             console.error(e);
             return res.status(500).json({ message: 'Erreur lors de la mise à jour' });
+        }
+    }
+
+    static async obtenirClassementParSession(req, res) {
+        try {
+            // On reçoit les dates depuis le frontend (ex: start=2026-01-01, end=2026-04-30)
+            const { start, end } = req.query;
+            const pool = require('../config/db');
+            const conn = await pool.getConnection();
+
+            // La requête SQL magique : On compte 10 points pour chaque tâche complétée dans la session
+            const sql = `
+                SELECT u.id, u.prenom, u.nom, u.icone_profil, u.couleur_profil, 
+                       (COUNT(t.id) * 10) AS score_session
+                FROM Utilisateur u
+                JOIN Tache t ON u.id = t.id_utilisateur
+                WHERE t.statut = 'completee' 
+                  AND t.date_limite >= ? 
+                  AND t.date_limite <= ?
+                GROUP BY u.id
+                ORDER BY score_session DESC
+                LIMIT 50
+            `;
+            
+            const [classement] = await conn.query(sql, [start, end]);
+            conn.release();
+
+            return res.status(200).json({ classement });
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({ message: 'Erreur lors du calcul du classement' });
         }
     }
 

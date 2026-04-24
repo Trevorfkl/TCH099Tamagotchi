@@ -269,10 +269,10 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
                     let renduVisuel = '';
                     let boutonAction = '';
 
-                    // === LOGIQUE SELON LE TYPE ===
+                    
                     if (item.type === 'icone_profil') {
                         bgCouleur = '#fff3e0'; txtCouleur = '#e65100';
-                        renduVisuel = `<img src="images/${item.image_url}" style="max-width:50px; max-height:50px; object-fit:contain;">`;
+                        renduVisuel = `<img src="images/${formaterIcone(item.image_url)}" style="max-width:50px; max-height:50px; object-fit:contain;">`;
                         
                         // VÉRIFICATION DE L'ÉTAT ACTIF
                         if (item.image_url === iconeActuelle) {
@@ -283,8 +283,8 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
                     
                     } else if (item.type === 'plante') {
                         bgCouleur = '#e8f5e9'; txtCouleur = '#2e7d32';
-                        renduVisuel = `<div style="font-size:40px;">${item.image_url}</div>`;
-                        boutonAction = `<button onclick="ouvrirChoixTache('${item.image_url}')" class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; border:1px solid #5a8a6a; color:#5a8a6a;">Sélectionner</button>`;
+                        renduVisuel = `<div style="font-size:40px;">${formaterIcone(item.image_url)}</div>`;
+                        boutonAction = `<button onclick="ouvrirChoixTache('${item.image_url}')" class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; border:1px solid #5a8a6a; color:#5a8a6a;">Choisir</button>`;
                     
                     } else if (item.type === 'theme') {
                         bgCouleur = '#e3f2fd'; txtCouleur = '#1565c0';

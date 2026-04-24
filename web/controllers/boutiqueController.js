@@ -29,7 +29,10 @@ class BoutiqueController {
             if (!nom) return res.status(400).json({ message: 'Nom obligatoire.' });
             await BoutiqueModel.creer(nom, type, prix, milestone, image, est_visible !== false);
             return res.status(201).json({ message: 'Article créé !' });
-        } catch (e) { return res.status(500).json({ message: 'Erreur création.' }); }
+        } catch (e) { 
+            console.error("🚨 ERREUR CACHÉE LORS DE LA CRÉATION :", e); // C'est ici la magie !
+            return res.status(500).json({ message: 'Erreur création.' }); 
+        }
     }
 
     static async toggleVisibility(req, res) {

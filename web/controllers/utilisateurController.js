@@ -155,14 +155,48 @@ class AuthController {
         }
     }
     // GET /api/auth/leaderboard
-    // GET /api/auth/leaderboard
     static async getLeaderboard(req, res) {
         try {
-            const periode = req.query.periode || 'toujours';
-            const typeTache = req.query.type || 'toutes'; // <-- NOUVEAU
+            const { periode, type, start, end } = req.query;
+            const pool = require('../config/db');
 
-            // On passe les deux paramètres au modèle
-            const leaderboard = await UtilisateurModel.obtenirLeaderboard(periode, typeTache);
+            let sql = `
+                SELECT u.id, u.prenom, u.nom, u.icone_profil, u.couleur_profil, u.coins,
+                       COUNT(t.id) as taches_completees,
+                       (SELECT COUNT(*) FROM Tache WHERE id_utilisateur = u.id) as total_taches
+                FROM Utilisateur u
+                LEFT JOIN Tache t ON u.id = t.id_utilisateur AND t.statut = 'completee'
+            `;
+            
+            let conditions = [];
+            let params = [];
+
+            // 1. Filtre par type d'activité (Étude, Devoir, etc.)
+            if (type && type !== 'toutes') {
+                conditions.push(`t.type = ?`);
+                params.push(type);
+            }
+
+            // 2. Filtre par Date (Le cœur du système de Session !)
+            if (periode === 'session' && start && end) {
+                conditions.push(`t.date_limite >= ? AND t.date_limite <= ?`);
+                params.push(start, end);
+            } else if (periode === 'annee') {
+                conditions.push(`YEAR(t.date_limite) = YEAR(CURDATE())`);
+            } else if (periode === '30jours') {
+                conditions.push(`t.date_limite >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`);
+            } else if (periode === '7jours') {
+                conditions.push(`t.date_limite >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`);
+            }
+
+            // 3. Assemblage de la requête SQL
+            if (conditions.length > 0) {
+                sql += ' WHERE ' + conditions.join(' AND ');
+            }
+
+            sql += ` GROUP BY u.id ORDER BY taches_completees DESC LIMIT 50`;
+
+            const [leaderboard] = await pool.query(sql, params);
             return res.status(200).json({ leaderboard });
         } catch (erreur) {
             console.error('Erreur leaderboard:', erreur);

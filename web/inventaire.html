@@ -86,7 +86,7 @@
                     // Générer le HTML avec l'attribut title="..." pour le survol
                     grid.innerHTML += `
                         <div class="inventory-item" title="Date d'achat : ${dateAchat}">
-                            <div class="item-icon">${item.image_url}</div>
+                            <div class="item-icon">${formaterIcone(item.image_url)}</div>
                             <div class="item-name">${item.nom}</div>
                             <span class="item-type ${classBadge}">${texteType}</span>
                         </div>

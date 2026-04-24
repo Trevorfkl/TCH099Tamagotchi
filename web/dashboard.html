@@ -100,20 +100,27 @@
     <script>
         if (!requireAuth()) {}
 
-        // Saison
-        const month = new Date().getMonth();
-        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
-        const seasonNames = { spring:'🌸 Printemps', summer:'☀️ Été', autumn:'🍂 Automne', winter:'❄️ Hiver' };
-        const currentSeason = seasons[month];
-        document.body.className = 'season-' + currentSeason;
+        // Initialisation de la Session Universitaire
+        const sessionActuelle = getSessionAcademique(new Date());
+        document.body.className = sessionActuelle.css; // Ex: applique la classe 'session-hiver'
 
         let currentDate  = new Date();
-        let selectedDate = new Date().toISOString().split('T')[0];
+        
+        // Nouvelle fonction blindée pour toujours avoir la VRAIE date locale (ex: "2026-04-23")
+        function getVraieDateLocale(d = new Date()) {
+            const annee = d.getFullYear();
+            const mois = String(d.getMonth() + 1).padStart(2, '0');
+            const jour = String(d.getDate()).padStart(2, '0');
+            return `${annee}-${mois}-${jour}`;
+        }
+
+        let selectedDate = getVraieDateLocale(); // Utilise la vraie date d'aujourd'hui !
         let allTaches    = [];
 
+       
         async function init() {
             try {
-                document.getElementById('seasonText').textContent = seasonNames[currentSeason];
+                document.getElementById('seasonText').textContent = sessionActuelle.nom;
 
                 // Charger profil frais depuis l'API pour avoir les vrais coins
                 const [profil, taches] = await Promise.all([apiGetProfil(), apiGetTaches()]);
@@ -137,15 +144,17 @@
 
         function getTachesForDate(d) { return allTaches.filter(t => t.date === d); }
 
-        function getPlantForDay(taches) {
-            if (!taches.length) return { emoji:'', label:'' };
-            if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
-            
-            // On prend la tâche la plus importante de la journée (pas encore complétée)
-            const tacheActive = taches.find(t => !t.completee) || taches[0];
-            // On affiche sa belle icône personnalisée !
-            return { emoji: tacheActive.icone || '🌱', label:'' };
-        }
+       function getPlantForDay(taches) {
+    // Si pas de tâches, on retourne du vide absolu !
+    if (!taches || taches.length === 0) return { emoji:'', label:'' };
+    
+    if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
+    
+    const tacheActive = taches.find(t => !t.completee) || taches[0];
+    // On retourne l'icône de la tâche, ou une chaîne VIDE si elle n'en a pas.
+    // Ne mets pas de '🌱' ici !
+    return { emoji: tacheActive.icone || '', label:'' }; 
+}
 
         function renderCalendar() {
             const daysHeader = document.getElementById('calendarDaysHeader');
@@ -178,18 +187,19 @@
             }
 
             for (let day = 1; day <= lastDay.getDate(); day++) {
-                const dateStr = new Date(year, month, day).toISOString().split('T')[0];
+                // On utilise notre nouvelle fonction pour éviter le décalage UTC !
+                const dateStr = getVraieDateLocale(new Date(year, month, day));
                 const taches  = getTachesForDate(dateStr);
                 const plant   = getPlantForDay(taches);
-                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const isToday = dateStr === getVraieDateLocale(); // Vérifie avec la date d'aujourd'hui en local
 
                 const cell = document.createElement('div');
                 cell.className = 'calendar-cell' + (dateStr === selectedDate ? ' selected' : '');
-                if (isToday && dateStr !== selectedDate) cell.style.border = '3px solid #ff9800';
+                if (isToday && dateStr !== selectedDate) cell.style.border = '2px dashed #5a8a6a';
                 cell.onclick = () => { selectedDate = dateStr; renderCalendar(); renderTasks(); };
                 cell.innerHTML = `
                     <div class="calendar-day-number">${day}</div>
-                    <div class="calendar-plant">${plant.emoji}</div>
+                    <div class="calendar-plant">${formaterIcone(plant.emoji)}</div>
                 `;
                 grid.appendChild(cell);
             }
@@ -219,7 +229,7 @@
                 div.innerHTML = `
                     <div class="${checkClass}" onclick="toggleTask(${task.id}, ${task.completee})">${checkSymbol}</div>
                     <div style="flex:1;">
-                        <div class="${textClass}">${typeEmoji} ${task.nom}</div>
+                        <div class="${textClass}">${formaterIcone(typeEmoji)} ${task.nom}</div>
                         <div class="task-date">${typeLabel} • ${task.date}</div>
                         <div class="task-actions">
                             <button onclick="goToEdit(${task.id})" class="action-btn action-btn-edit">✏️ Modifier</button>

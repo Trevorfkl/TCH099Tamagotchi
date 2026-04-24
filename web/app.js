@@ -223,3 +223,40 @@ async function apiGetJardin() {
     if (!reponse.ok) throw new Error(data.message || 'Erreur jardin');
     return data.cases || [];
 }
+
+function formaterIcone(icone) {
+    // 1. Si c'est vide, on retourne RIEN DU TOUT (pour vider le calendrier !)
+    if (!icone || icone === 'null' || icone === 'undefined' || icone === '') return ''; 
+    
+    let texte = String(icone).trim();
+    
+    // 2. La Regex magique qui trouve l'image .png même s'il y a un espace ou du texte autour
+    const match = texte.match(/[\w-]+\.(png|jpg|gif|webp)/i);
+    
+    if (match) {
+        return `<img src="images/${match[0]}" style="width: 24px; height: 24px; object-fit: contain; vertical-align: middle;" alt="icone">`;
+    }
+    
+    // 3. Sinon on retourne le texte (ou l'émoji)
+    return texte; 
+}
+// =========================
+// GESTION DES SESSIONS UNIVERSITAIRES
+// =========================
+function getSessionAcademique(date = new Date()) {
+    const mois = date.getMonth(); // 0 = Janvier, 11 = Décembre
+    const annee = date.getFullYear();
+
+    // Hiver : Janvier à Avril (Mois 0 à 3)
+    if (mois >= 0 && mois <= 3) {
+        return { id: 'hiver', nom: '❄️ Hiver ' + annee, css: 'session-hiver', start: `${annee}-01-01`, end: `${annee}-04-30` };
+    } 
+    // Été : Mai à Août (Mois 4 à 7)
+    else if (mois >= 4 && mois <= 7) {
+        return { id: 'ete', nom: '☀️ Été ' + annee, css: 'session-ete', start: `${annee}-05-01`, end: `${annee}-08-31` };
+    } 
+    // Automne : Septembre à Décembre (Mois 8 à 11)
+    else {
+        return { id: 'automne', nom: '🍂 Automne ' + annee, css: 'session-automne', start: `${annee}-09-01`, end: `${annee}-12-31` };
+    }
+}

@@ -33,11 +33,11 @@
 
             <div class="filters">
                 <select id="periodeSelect" class="filter-select" onchange="chargerLeaderboard()">
-                    <option value="toujours">Depuis toujours</option>
-                    <option value="annee">Cette année</option>
-                    <option value="30jours">30 derniers jours</option>
-                    <option value="7jours">7 derniers jours</option>
-                </select>
+                <option value="session">🎓 Session Actuelle</option>
+                <option value="toujours">🌍 Depuis toujours</option>
+                <option value="annee">📅 Cette année</option>
+                <option value="30jours">⏳ 30 derniers jours</option>
+            </select>
 
                 <select id="typeSelect" class="filter-select" onchange="chargerLeaderboard()">
                     <option value="toutes">Toutes les tâches</option>
@@ -70,11 +70,22 @@
 
         async function chargerLeaderboard() {
             const periode = document.getElementById('periodeSelect').value;
-            const typeTache = document.getElementById('typeSelect').value; // <-- NOUVEAU
+            const typeTache = document.getElementById('typeSelect').value; 
             const token = getToken();
+    
+            let url = `http://localhost:3000/api/auth/leaderboard?periode=${periode}&type=${typeTache}`;
+
+            // Si on trie par session, on ajoute les dates de la session universitaire
+            if (periode === 'session') {
+                const session = getSessionAcademique();
+                url += `&start=${session.start}&end=${session.end}`;
+                document.querySelector('h2').textContent = `🏆 Top Jardiniers - ${session.nom}`;
+            } else {
+                document.querySelector('h2').textContent = `🏆 Top Jardiniers`;
+            }
             
             try {
-                const reponse = await fetch(`http://localhost:3000/api/auth/leaderboard?periode=${periode}&type=${typeTache}`, {
+                const reponse = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await reponse.json();
@@ -85,7 +96,6 @@
                 document.getElementById('leaderboardList').innerHTML = '<p class="empty-msg">Erreur de chargement 🥀</p>';
             }
         }
-
         function afficherDonnees() {
             const critereDeTri = document.getElementById('triSelect').value;
             const conteneur = document.getElementById('leaderboardList');
