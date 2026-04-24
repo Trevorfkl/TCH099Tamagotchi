@@ -225,11 +225,78 @@ async function apiGetJardin() {
 }
 
 function formaterIcone(icone) {
-    if (!icone) return '🌱'; // Par défaut si c'est vide
-    // Si c'est un fichier image (png, jpg, gif)
-    if (icone.includes('.png') || icone.includes('.jpg') || icone.includes('.gif')) {
-        return `<img src="images/${icone}" style="width: 24px; height: 24px; object-fit: contain;" alt="plante">`;
+    // 1. Si c'est vide, on retourne RIEN DU TOUT (pour vider le calendrier !)
+    if (!icone || icone === 'null' || icone === 'undefined' || icone === '') return ''; 
+    
+    let texte = String(icone).trim();
+    
+    // 2. La Regex magique qui trouve l'image .png même s'il y a un espace ou du texte autour
+    const match = texte.match(/[\w-]+\.(png|jpg|gif|webp)/i);
+    
+    if (match) {
+        return `<img src="images/${match[0]}" style="width: 24px; height: 24px; object-fit: contain; vertical-align: middle;" alt="icone">`;
     }
-    // Sinon (si c'est un émoji ou un hiéroglyphe)
-    return icone; 
+    
+    // 3. Sinon on retourne le texte (ou l'émoji)
+    return texte; 
 }
+// =========================
+// GESTION DES SESSIONS UNIVERSITAIRES
+// =========================
+function getSessionAcademique(date = new Date()) {
+    const mois = date.getMonth(); // 0 = Janvier, 11 = Décembre
+    const annee = date.getFullYear();
+
+    // Hiver : Janvier à Avril (Mois 0 à 3)
+    if (mois >= 0 && mois <= 3) {
+        return { id: 'hiver', nom: '❄️ Hiver ' + annee, css: 'session-hiver', start: `${annee}-01-01`, end: `${annee}-04-30` };
+    } 
+    // Été : Mai à Août (Mois 4 à 7)
+    else if (mois >= 4 && mois <= 7) {
+        return { id: 'ete', nom: '☀️ Été ' + annee, css: 'session-ete', start: `${annee}-05-01`, end: `${annee}-08-31` };
+    } 
+    // Automne : Septembre à Décembre (Mois 8 à 11)
+    else {
+        return { id: 'automne', nom: '🍂 Automne ' + annee, css: 'session-automne', start: `${annee}-09-01`, end: `${annee}-12-31` };
+    }
+}
+
+// =========================
+// MOTEUR DE THÈMES DYNAMIQUES
+// =========================
+// =========================
+// MOTEUR DE THÈMES DYNAMIQUES
+// =========================
+function appliquerThemeGlobal() {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    // ON UTILISE couleur_profil QUI EXISTE DANS TA BD !
+    const couleurTheme = user.couleur_profil || '#4a8a55'; 
+    const iconeProfil = user.icone_profil || '👤';
+
+    // 1. Appliquer la couleur partout (Barre, boutons, cadres)
+    let styleEl = document.getElementById('theme-dynamique');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'theme-dynamique';
+        document.head.appendChild(styleEl);
+    }
+    
+    styleEl.innerHTML = `
+        .top-bar, .profile-header { background: linear-gradient(135deg, ${couleurTheme}, #2d6a2d) !important; border-color: ${couleurTheme} !important; }
+        .btn-primary { background: linear-gradient(135deg, ${couleurTheme}, #2d6a2d) !important; border-color: ${couleurTheme} !important; }
+        .app-container, .calendar-wrapper, .garden-card, .task-section, .admin-form { border-color: ${couleurTheme} !important; }
+        .calendar-cell.selected { background: linear-gradient(135deg, ${couleurTheme}, #2d6a2d) !important; border-color: ${couleurTheme} !important; }
+        h2, .stat-number, .tab-btn { color: ${couleurTheme} !important; border-color: ${couleurTheme} !important; }
+        .tab-btn.active { background: ${couleurTheme} !important; color: white !important; }
+    `;
+
+    // 2. Mettre à jour l'icône de profil en haut du Dashboard
+    const iconeElement = document.getElementById('iconeHeader');
+    if (iconeElement) {
+        iconeElement.innerHTML = formaterIcone(iconeProfil);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', appliquerThemeGlobal);

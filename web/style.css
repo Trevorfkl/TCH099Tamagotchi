@@ -746,10 +746,10 @@ textarea { min-height: 100px; resize: vertical; }
 .success-msg { color: #2e7d32; font-size: 13px; font-weight: 700; margin-top: 6px; }
 
 /* ===== SEASON OVERLAY ===== */
-.season-spring .garden-bg { background: linear-gradient(180deg, #87CEEB 0%, #98d8aa 40%, #4a7c59 100%); }
-.season-summer .garden-bg { background: linear-gradient(180deg, #4fc3f7 0%, #81c784 40%, #388e3c 100%); }
-.season-autumn .garden-bg { background: linear-gradient(180deg, #ff8f00 0%, #d4a04a 40%, #795548 100%); }
-.season-winter .garden-bg { background: linear-gradient(180deg, #90a4ae 0%, #b0bec5 40%, #78909c 100%); }
+.session-printemps .garden-bg { background: linear-gradient(180deg, #87CEEB 0%, #98d8aa 40%, #4a7c59 100%); }
+.session-ete .garden-bg { background: linear-gradient(180deg, #4fc3f7 0%, #81c784 40%, #388e3c 100%); }
+.session-automne .garden-bg { background: linear-gradient(180deg, #ff8f00 0%, #d4a04a 40%, #795548 100%); }
+.session-hiver .garden-bg { background: linear-gradient(180deg, #90a4ae 0%, #b0bec5 40%, #78909c 100%); }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
@@ -768,4 +768,3 @@ textarea { min-height: 100px; resize: vertical; }
     h1 { font-size: 10px; }
     .btn { font-size: 8px; padding: 12px; }
 }
-

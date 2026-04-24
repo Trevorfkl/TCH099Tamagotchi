@@ -19,7 +19,7 @@
 
             <!-- Profile header -->
             <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">?</div>
+                <div class="profile-avatar" id="avatarProfil">👤</div>
                 <div>
                     <div class="profile-name" id="profileFullName">Mon profil</div>
                     <div class="profile-subtitle" id="profileEmail">-</div>
@@ -195,9 +195,9 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
                 document.getElementById('statProgress').textContent  = (stats.pourcentageCompletion || 0) + '%';
 
                 selectedColor = data.couleur_profil || '#4a8a55';
-                const avatar = document.getElementById('profileAvatar');
+                const avatar = document.getElementById('avatarProfil');
                 avatar.style.background = selectedColor;
-                avatar.textContent = data.prenom ? data.prenom.charAt(0).toUpperCase() : '?';
+                avatar.innerHTML = formaterIcone(data.icone_profil || '👤');
                 updateColorSelection(selectedColor);
 
                 setCurrentUser({ ...getCurrentUser(), ...data });
@@ -247,6 +247,7 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
             try {
                 // 1. On va chercher le profil pour savoir ce qui est déjà actif
                 const profil = await apiGetProfil();
+                
                 const iconeActuelle = profil.icone_profil;
 
                 // 2. On va chercher l'inventaire
@@ -269,10 +270,10 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
                     let renduVisuel = '';
                     let boutonAction = '';
 
-                    // === LOGIQUE SELON LE TYPE ===
+                    
                     if (item.type === 'icone_profil') {
                         bgCouleur = '#fff3e0'; txtCouleur = '#e65100';
-                        renduVisuel = `<img src="images/${item.image_url}" style="max-width:50px; max-height:50px; object-fit:contain;">`;
+                        renduVisuel = `<img src="images/${formaterIcone(item.image_url)}" style="max-width:50px; max-height:50px; object-fit:contain;">`;
                         
                         // VÉRIFICATION DE L'ÉTAT ACTIF
                         if (item.image_url === iconeActuelle) {
@@ -283,8 +284,8 @@ Sauvegarde et rafraîchis ta page Profil, ça devrait s'intégrer parfaitement �
                     
                     } else if (item.type === 'plante') {
                         bgCouleur = '#e8f5e9'; txtCouleur = '#2e7d32';
-                        renduVisuel = `<div style="font-size:40px;">${item.image_url}</div>`;
-                        boutonAction = `<button onclick="ouvrirChoixTache('${item.image_url}')" class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; border:1px solid #5a8a6a; color:#5a8a6a;">Sélectionner</button>`;
+                        renduVisuel = `<div style="font-size:40px;">${formaterIcone(item.image_url)}</div>`;
+                        boutonAction = `<button onclick="ouvrirChoixTache('${item.image_url}')" class="btn btn-secondary" style="margin-top:10px; width:100%; font-size:12px; padding:4px; border:1px solid #5a8a6a; color:#5a8a6a;">Choisir</button>`;
                     
                     } else if (item.type === 'theme') {
                         bgCouleur = '#e3f2fd'; txtCouleur = '#1565c0';

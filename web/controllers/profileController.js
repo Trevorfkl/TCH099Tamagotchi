@@ -129,7 +129,22 @@ class ProfileController {
     static async equiper(req, res) {
         try {
             const { type, image_url } = req.body;
-            await UtilisateurModel.equiperItem(req.userId, type, image_url);
+            const pool = require('../config/db');
+            const conn = await pool.getConnection();
+
+            // On enregistre directement dans les bonnes colonnes de ta base de données !
+            if (type === 'icone_profil') {
+                await conn.query('UPDATE Utilisateur SET icone_profil = ? WHERE id = ?', [image_url, req.userId]);
+            } else if (type === 'theme') {
+                // MAGIE : On utilise ta colonne existante "couleur_profil" pour sauvegarder le thème !
+                await conn.query('UPDATE Utilisateur SET couleur_profil = ? WHERE id = ?', [image_url, req.userId]);
+            } else if (type === 'plante') {
+                // On met la plante par défaut partout
+                await conn.query('UPDATE Utilisateur SET pref_etude = ?, pref_devoir = ?, pref_tp = ?, pref_examen = ?, pref_projet = ? WHERE id = ?', 
+                [image_url, image_url, image_url, image_url, image_url, req.userId]);
+            }
+
+            conn.release();
             return res.status(200).json({ message: 'Équipement mis à jour !' });
         } catch (e) {
             console.error(e);

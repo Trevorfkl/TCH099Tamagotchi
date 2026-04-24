@@ -6,28 +6,14 @@
     <title>Growchi - Mon Inventaire 🎒</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        
-        .inventory-item { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 20px 10px; 
-            text-align: center; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            border: 2px solid #e0e0e0; 
-            cursor: help; /* Change le curseur en point d'interrogation pour indiquer qu'on peut survoler */
-            transition: transform 0.2s, border-color 0.2s; 
-        }
+        .shop-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid #5a8a6a; background: white; color: #5a8a6a; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { background: #5a8a6a; color: white; }
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .inventory-item { background: white; border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 2px solid #e0e0e0; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .inventory-item:hover { transform: translateY(-5px); border-color: #5a8a6a; }
-        
-        .item-icon { font-size: 50px; margin-bottom: 10px; }
-        .item-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #333; }
-        .item-type { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: bold; display: inline-block; margin-top: 5px;}
-        
-        /* Couleurs personnalisées pour les badges de type */
-        .type-plante { background: #e8f5e9; color: #2e7d32; }
-        .type-theme { background: #e3f2fd; color: #1565c0; }
-        .type-icone { background: #fff3e0; color: #e65100; }
+        .item-icon { height: 60px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; font-size: 40px; }
+        .item-name { font-weight: bold; font-size: 13px; margin-bottom: 10px; color: #333; }
     </style>
 </head>
 <body class="season-spring">
@@ -37,68 +23,163 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2>🎒 Mon Inventaire</h2>
-                <a href="profile.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour au profil</a>
+                <a href="profile.html" class="btn btn-secondary" style="padding: 6px 12px;">← Retour</a>
             </div>
             
-            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-                <i>💡 Laisse ta souris sur un objet pour voir quand tu l'as acheté !</i>
-            </p>
-
-            <div class="inventory-grid" id="inventoryGrid">
-                <p style="grid-column: 1 / -1; text-align: center;">Recherche dans le sac à dos... 🎒</p>
+            <div style="background: #f0f7f2; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; border: 2px dashed #5a8a6a;">
+                <p style="margin-bottom: 10px; font-weight: bold; color: #2d6a2d;">🔄 Remettre à zéro (Désactiver)</p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="equiperItem('plante', '🌱')" style="font-size: 11px; padding: 6px 12px; width: auto;">🌱 Plantes par défaut</button>
+                    <button class="btn btn-secondary" onclick="equiperItem('theme', '#4a8a55')" style="font-size: 11px; padding: 6px 12px; width: auto;">🎨 Thème Vert</button>
+                    <button class="btn btn-secondary" onclick="equiperItem('icone_profil', '👤')" style="font-size: 11px; padding: 6px 12px; width: auto;">👤 Icône de base</button>
+                    
+                    <button class="btn btn-danger" onclick="equiperItem('icone_profil', ' ')" style="font-size: 11px; padding: 6px 12px; width: auto; background: #ffcdd2; color: #c62828; border:none;">🚫 Enlever l'icône</button>
+                </div>
             </div>
 
+            <div class="shop-tabs">
+                <button id="btn-plante" class="tab-btn active" onclick="filtrerInventaire('plante')">🌱 Plantes</button>
+                <button id="btn-theme" class="tab-btn" onclick="filtrerInventaire('theme')">🎨 Thèmes</button>
+                <button id="btn-icone_profil" class="tab-btn" onclick="filtrerInventaire('icone_profil')">👤 Icônes</button>
+            </div>
+
+            <div class="inventory-grid" id="inventoryGrid"></div>
+
+        </div>
+    </div>
+
+    <div id="modalChoixTache" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:1005; width:90%; max-width:400px; border:2px solid #5a8a6a;">
+        <h3 style="margin-top:0;">Associer cette plante 🌱</h3>
+        <p style="font-size:13px; color:#666;">Toutes tes tâches de cette catégorie utiliseront cette icône.</p>
+        <select id="selectTypeTache" class="form-control" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px;">
+            <option value="etude">Étude</option>
+            <option value="devoir">Devoir</option>
+            <option value="tp">TP</option>
+            <option value="examen">Examen</option>
+            <option value="projet">Projet</option>
+        </select>
+        <input type="hidden" id="planteSecreteAEquiper">
+        <div style="display:flex; justify-content:space-between;">
+            <button class="btn btn-secondary" onclick="document.getElementById('modalChoixTache').style.display='none'">Annuler</button>
+            <button class="btn btn-primary" onclick="validerEquipementPlante()">Sauvegarder</button>
         </div>
     </div>
 
     <script src="app.js"></script>
     <script>
-        // Sécurité : vérifier si l'utilisateur est connecté
         if (!requireAuth()) {}
 
+        let monInventaire = [];
+
         async function chargerInventaire() {
-            const grid = document.getElementById('inventoryGrid');
             try {
                 const token = getToken();
-                const reponse = await fetch('http://localhost:3000/api/boutique/inventaire', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const reponse = await fetch('http://localhost:3000/api/boutique/inventaire', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await reponse.json();
-                grid.innerHTML = '';
+                
+                const defauts = [
+                    { id: 'def_p1', nom: 'Jeune Pousse', type: 'plante', image_url: '🌱' },
+                    { id: 'def_p2', nom: 'Plante en pot', type: 'plante', image_url: '🪴' },
+                    { id: 'def_p3', nom: 'Fleur Rose', type: 'plante', image_url: '🌸' },
+                    { id: 'def_t1', nom: 'Thème Vert', type: 'theme', image_url: '#4a8a55' },
+                    { id: 'def_i1', nom: 'Icône de base', type: 'icone_profil', image_url: '👤' }
+                ];
 
-                // Si l'inventaire est vide
-                if (!data.inventaire || data.inventaire.length === 0) {
-                    grid.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#888;">Ton inventaire est vide. Va accomplir des tâches et visite la <a href="shop.html" style="color:#5a8a6a;">boutique</a> !</p>';
-                    return;
-                }
+                monInventaire = [...defauts, ...(data.inventaire || [])];
 
-                // Afficher chaque objet
-                data.inventaire.forEach(item => {
-                    // Transformer la date moche (2026-04-13T12:00:00Z) en belle date (13 avril 2026)
-                    const dateAchat = new Date(item.date_achat).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-                    
-                    // Appliquer la bonne couleur selon la catégorie
-                    let classBadge = 'type-icone';
-                    let texteType = 'ICÔNE';
-                    if (item.type === 'plante') { classBadge = 'type-plante'; texteType = 'PLANTE'; }
-                    if (item.type === 'theme') { classBadge = 'type-theme'; texteType = 'THÈME'; }
-
-                    // Générer le HTML avec l'attribut title="..." pour le survol
-                    grid.innerHTML += `
-                        <div class="inventory-item" title="Date d'achat : ${dateAchat}">
-                            <div class="item-icon">${item.image_url}</div>
-                            <div class="item-name">${item.nom}</div>
-                            <span class="item-type ${classBadge}">${texteType}</span>
-                        </div>
-                    `;
-                });
+                const ongletActif = document.querySelector('.tab-btn.active') ? document.querySelector('.tab-btn.active').id.replace('btn-', '') : 'plante';
+                filtrerInventaire(ongletActif);
             } catch (e) {
-                console.error("Erreur d'inventaire:", e);
-                grid.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Erreur de connexion au serveur.</p>';
+                document.getElementById('inventoryGrid').innerHTML = '<p style="color:red; text-align:center; width:100%;">Erreur de connexion.</p>';
             }
         }
 
-        // Lancer la fonction au chargement de la page
+        function filtrerInventaire(categorie) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const btnActif = document.getElementById('btn-' + categorie);
+            if(btnActif) btnActif.classList.add('active');
+
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            
+            const articlesFiltres = monInventaire.filter(a => a.type === categorie);
+
+            if(articlesFiltres.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1 / -1;">Rien ici pour le moment !</p>';
+                return;
+            }
+
+            articlesFiltres.forEach(item => {
+                let affichageIcone = formaterIcone(item.image_url);
+
+                // MAGIE : Rendre les PNG beaucoup plus gros dans l'inventaire !
+                affichageIcone = affichageIcone.replace('width: 24px; height: 24px;', 'width: 50px; height: 50px;');
+
+                if (item.type === 'theme' && item.image_url.startsWith('#')) {
+                    affichageIcone = `<div style="width:40px; height:40px; border-radius:50%; background-color:${item.image_url}; border: 2px solid #333;"></div>`;
+                }
+
+                let btnHTML = `<button class="btn btn-primary" style="padding: 8px; font-size: 11px;" onclick="equiperItem('${item.type}', '${item.image_url}')">Équiper</button>`;
+                
+                // Si c'est une plante, on ouvre le popup de sélection !
+                if (item.type === 'plante') {
+                    btnHTML = `<button class="btn btn-primary" style="padding: 8px; font-size: 11px;" onclick="ouvrirChoixTache('${item.image_url}')">Choisir le type</button>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="inventory-item">
+                        <div>
+                            <div class="item-icon">${affichageIcone}</div>
+                            <div class="item-name">${item.nom}</div>
+                        </div>
+                        ${btnHTML}
+                    </div>
+                `;
+            });
+        }
+
+        function ouvrirChoixTache(emojiPlante) {
+            document.getElementById('planteSecreteAEquiper').value = emojiPlante;
+            document.getElementById('modalChoixTache').style.display = 'block';
+        }
+
+        async function validerEquipementPlante() {
+            const typeSelectionne = document.getElementById('selectTypeTache').value;
+            const emojiPlante = document.getElementById('planteSecreteAEquiper').value;
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/profile/taches-type/plante', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ type_tache: typeSelectionne, plante: emojiPlante })
+                });
+                if (reponse.ok) {
+                    alert("🌱 Plante associée avec succès !");
+                    document.getElementById('modalChoixTache').style.display = 'none';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function equiperItem(type, valeur) {
+            try {
+                const token = getToken();
+                const reponse = await fetch('http://localhost:3000/api/profile/equiper', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ type: type, image_url: valeur })
+                });
+
+                if (reponse.ok) {
+                    alert("✨ Équipé avec succès !");
+                    const profil = await apiGetProfil();
+                    if(profil) setCurrentUser({...getCurrentUser(), ...profil});
+                    window.location.reload(); 
+                } else {
+                    alert("Erreur lors de l'équipement.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
         chargerInventaire();
     </script>
 </body>

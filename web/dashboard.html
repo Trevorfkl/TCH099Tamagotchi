@@ -22,9 +22,13 @@
 
             <!-- Top bar -->
             <div class="top-bar">
-                <div>
-                    <div class="greeting" id="welcomeText">Bonjour ! 👋</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:4px; font-weight:600;" id="seasonText">🌱 Printemps</div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="iconeHeader" style="font-size: 24px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">👤</div>
+                    
+                    <div>
+                        <div class="greeting" id="welcomeText">Bonjour ! 👋</div>
+                        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:4px; font-weight:600;" id="seasonText">🌱 Printemps</div>
+                    </div>
                 </div>
                 <div class="coins-badge" id="coinsBox">💰 0 coins</div>
             </div>
@@ -39,9 +43,9 @@
                 <div class="calendar-grid" id="calendarDaysHeader"></div>
                 <div class="calendar-grid" id="calendarGrid"></div>
                 <div class="legend-row">
-                    <div class="legend-item">🌱 Étude</div>
-                    <div class="legend-item">🪴 TP/Devoir</div>
-                    <div class="legend-item">🌸 Examen</div>
+                    <div class="legend-item" id="legende-etude">🌱 Étude</div>
+                    <div class="legend-item" id="legende-devoir">🪴 TP/Devoir</div>
+                    <div class="legend-item" id="legende-examen">🌸 Examen</div>
                     <div class="legend-item">✅ Complété</div>
                 </div>
             </div>
@@ -100,33 +104,38 @@
     <script>
         if (!requireAuth()) {}
 
-        // Saison
-        const month = new Date().getMonth();
-        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
-        const seasonNames = { spring:'🌸 Printemps', summer:'☀️ Été', autumn:'🍂 Automne', winter:'❄️ Hiver' };
-        const currentSeason = seasons[month];
-        document.body.className = 'season-' + currentSeason;
+        // Initialisation de la Session Universitaire
+        const sessionActuelle = getSessionAcademique(new Date());
+        document.body.className = sessionActuelle.css; // Ex: applique la classe 'session-hiver'
 
         let currentDate  = new Date();
-        let selectedDate = new Date().toISOString().split('T')[0];
+        
+        // Nouvelle fonction blindée pour toujours avoir la VRAIE date locale (ex: "2026-04-23")
+        function getVraieDateLocale(d = new Date()) {
+            const annee = d.getFullYear();
+            const mois = String(d.getMonth() + 1).padStart(2, '0');
+            const jour = String(d.getDate()).padStart(2, '0');
+            return `${annee}-${mois}-${jour}`;
+        }
+
+        let selectedDate = getVraieDateLocale(); // Utilise la vraie date d'aujourd'hui !
         let allTaches    = [];
 
-        function formaterIcone(icone) {
-            if (!icone) return ''; 
-            if (icone.includes('.png') || icone.includes('.jpg') || icone.includes('.gif') || icone.includes('.webp')) {
-                return `<img src="images/${icone}" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle;" alt="plante">`;
-            }
-            return icone; 
-        }
+       
         async function init() {
             try {
-                document.getElementById('seasonText').textContent = seasonNames[currentSeason];
-
-                // Charger profil frais depuis l'API pour avoir les vrais coins
+                // (Garde tes lignes existantes pour la session/saison ici...)
+                
+                // Charger profil frais depuis l'API
                 const [profil, taches] = await Promise.all([apiGetProfil(), apiGetTaches()]);
 
                 document.getElementById('welcomeText').textContent = 'Bonjour, ' + profil.prenom + ' ! 👋';
                 document.getElementById('coinsBox').textContent = '💰 ' + (profil.coins || 0) + ' coins';
+
+                // 👉 NOUVEAU : MISE À JOUR DE LA LÉGENDE DYNAMIQUE !
+                document.getElementById('legende-etude').innerHTML  = `${formaterIcone(profil.pref_etude || '🌱')} Étude`;
+                document.getElementById('legende-devoir').innerHTML = `${formaterIcone(profil.pref_devoir || '🪴')} TP/Devoir`;
+                document.getElementById('legende-examen').innerHTML = `${formaterIcone(profil.pref_examen || '🌸')} Examen`;
 
                 // Mettre à jour le localStorage avec les données fraîches
                 const user = getCurrentUser();
@@ -144,15 +153,16 @@
 
         function getTachesForDate(d) { return allTaches.filter(t => t.date === d); }
 
-        function getPlantForDay(taches) {
-            if (!taches.length) return { emoji:'', label:'' };
-            if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
-            
-            // On prend la tâche la plus importante de la journée (pas encore complétée)
-            const tacheActive = taches.find(t => !t.completee) || taches[0];
-            // On affiche sa belle icône personnalisée !
-            return { emoji: tacheActive.icone || '🌱', label:'' };
-        }
+       function getPlantForDay(taches) {
+    
+    if (!taches || taches.length === 0) return { emoji:'', label:'' };
+    
+    if (taches.every(t => t.completee)) return { emoji:'✅', label:'' };
+    
+    const tacheActive = taches.find(t => !t.completee) || taches[0];
+    
+    return { emoji: tacheActive.icone || '', label:'' }; 
+}
 
         function renderCalendar() {
             const daysHeader = document.getElementById('calendarDaysHeader');
@@ -185,14 +195,15 @@
             }
 
             for (let day = 1; day <= lastDay.getDate(); day++) {
-                const dateStr = new Date(year, month, day).toISOString().split('T')[0];
+                // On utilise notre nouvelle fonction pour éviter le décalage UTC !
+                const dateStr = getVraieDateLocale(new Date(year, month, day));
                 const taches  = getTachesForDate(dateStr);
                 const plant   = getPlantForDay(taches);
-                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const isToday = dateStr === getVraieDateLocale(); // Vérifie avec la date d'aujourd'hui en local
 
                 const cell = document.createElement('div');
                 cell.className = 'calendar-cell' + (dateStr === selectedDate ? ' selected' : '');
-                if (isToday && dateStr !== selectedDate) cell.style.border = '3px solid #ff9800';
+                if (isToday && dateStr !== selectedDate) cell.style.border = '2px dashed #5a8a6a';
                 cell.onclick = () => { selectedDate = dateStr; renderCalendar(); renderTasks(); };
                 cell.innerHTML = `
                     <div class="calendar-day-number">${day}</div>
@@ -241,13 +252,14 @@
         }
 
         function updateGarden() {
-            const total    = allTaches.length;
-            const done     = allTaches.filter(t => t.completee).length;
+            const tachesDuJour = getTachesForDate(selectedDate);
+            const total    = tachesDuJour.length;
+            const done     = tachesDuJour.filter(t => t.completee).length;
             const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+
 
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('progressText').textContent = progress + '% de croissance';
-
             if (progress === 100 && total > 0) {
                 document.getElementById('gardenIcon').textContent = '🌸';
                 document.getElementById('gardenText').textContent = 'Jardin en fleurs';

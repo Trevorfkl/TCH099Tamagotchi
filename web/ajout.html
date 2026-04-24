@@ -66,10 +66,9 @@
 
     <script src="app.js"></script>
     <script>
-        const month = new Date().getMonth();
-        const seasons = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
-        document.body.className = 'season-' + seasons[month];
-
+        // Initialisation de la Session Universitaire
+        const sessionActuelle = getSessionAcademique();
+        document.body.className = sessionActuelle.css;
         if (!requireAuth()) {}
 
         // On vérifie s'il y a une date envoyée par le calendrier
@@ -105,13 +104,21 @@
 
         document.getElementById('type').addEventListener('change', mettreAJourIcone);
 
+
+
         function mettreAJourIcone() {
-            const typeChoisi = document.getElementById('type').value;
-            const iconeCustom = mesPreferences[typeChoisi] || '🌱';
-            
-            document.getElementById('iconeApercu').textContent = iconeCustom;
-            document.getElementById('iconeSecrete').value = iconeCustom;
-        }
+    const typeChoisi = document.getElementById('type').value;
+    const iconeBrute = mesPreferences[typeChoisi] || '🌱';
+    console.log("Mise à jour aperçu avec :", iconeBrute); 
+    const elementApercu = document.getElementById('iconeApercu');
+    const inputCache = document.getElementById('iconeSecrete');
+    if (elementApercu) {
+        elementApercu.innerHTML = formaterIcone(iconeBrute);
+    }
+    if (inputCache) {
+        inputCache.value = iconeBrute;
+    }
+}
 
         // 2. GESTION DU BOUTON AJOUTER RÉPARÉ
         document.getElementById('btnAjouter').addEventListener('click', async function () {
